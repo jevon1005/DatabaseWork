@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.10.16)  13 MAR 2026 14:10
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.10.16)  13 MAR 2026 14:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -856,88 +856,20 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: rotating package is loaded.
 Package caption Info: End \AtBeginDocument code.
-(./项目开发文档.toc
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.53937> on input line 3.
+(Font)              <10.53937> on input line 51.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 3.
+(Font)              <7> on input line 51.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 3.
-)
-\tf@toc=\write4
-\openout4 = `项目开发文档.toc'.
+(Font)              <5> on input line 51.
 
+Underfull \hbox (badness 10000) in paragraph at lines 51--62
 
-
-[1
-
-]
-File: 用户用例图.pdf Graphic file (type pdf)
-<用户用例图.pdf>
-
-Overfull \hbox (241.84843pt too wide) in paragraph at lines 62--63
- [][] 
  []
 
 
+Underfull \hbox (badness 10000) in paragraph at lines 51--62
 
-[2]
-
-[3]
-
-Package fontspec Info: 
-(fontspec)             Could not resolve font "FangSong/BI" (it probably
-(fontspec)             doesn't exist).
-
-
-Package fontspec Info: 
-(fontspec)             Could not resolve font "FangSong/B" (it probably
-(fontspec)             doesn't exist).
-
-
-Package fontspec Info: 
-(fontspec)             Could not resolve font "FangSong/I" (it probably
-(fontspec)             doesn't exist).
-
-
-Package fontspec Info: 
-(fontspec)             Font family 'FangSong(0)' created for font 'FangSong'
-(fontspec)             with options [Script={CJK}].
-(fontspec)              
-(fontspec)              This font family consists of the following NFSS
-(fontspec)             series/shapes:
-(fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.:
-(fontspec)             <->"FangSong/OT:script=hani;language=dflt;"
-
-File: 管理员用例图.pdf Graphic file (type pdf)
-<管理员用例图.pdf>
-
-Overfull \hbox (241.84843pt too wide) in paragraph at lines 101--102
- [][] 
  []
 
 
-
-[4]
-
-[5]
-
-[6]
-
-[7] (./项目开发文档.aux)
- ***********
-LaTeX2e <2025-06-01> patch level 1
-L3 programming layer <2022/08/05>
- ***********
- ) 
-Here is how much of TeX's memory you used:
- 12592 strings out of 468389
- 313859 string characters out of 5441542
- 776256 words of memory out of 5000000
- 40884 multiletter control sequences out of 15000+600000
- 630527 words of font info for 76 fonts, out of 8000000 for 9000
- 1348 hyphenation exceptions out of 8191
- 94i,5n,111p,421b,350s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-Output written on 项目开发文档.pdf (7 pages).

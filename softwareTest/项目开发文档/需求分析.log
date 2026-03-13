@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.10.16)  13 MAR 2026 13:52
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.10.16)  13 MAR 2026 14:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -856,28 +856,14 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: rotating package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.53937> on input line 51.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 51.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 51.
-
-Underfull \hbox (badness 10000) in paragraph at lines 51--62
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 51--62
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 51--62
-
- []
-
 (./需求分析.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.53937> on input line 3.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 3.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 3.
+
 
 [1
 
@@ -888,6 +874,18 @@ Underfull \hbox (badness 10000) in paragraph at lines 51--62
 
 
 [2]
+File: 用户用例图.pdf Graphic file (type pdf)
+<用户用例图.pdf>
+
+Overfull \hbox (241.84843pt too wide) in paragraph at lines 62--63
+ [][] 
+ []
+
+
+
+[3]
+
+[4]
 
 Package fontspec Info: 
 (fontspec)             Could not resolve font "FangSong/BI" (it probably
@@ -903,8 +901,6 @@ Package fontspec Info:
 (fontspec)             Could not resolve font "FangSong/I" (it probably
 (fontspec)             doesn't exist).
 
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10.53937> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 68.
 
 Package fontspec Info: 
 (fontspec)             Font family 'FangSong(0)' created for font 'FangSong'
@@ -916,411 +912,34 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->"FangSong/OT:script=hani;language=dflt;"
 
-
-Overfull \hbox (7.3485pt too wide) in paragraph at lines 68--69
-[][]\TU/SimSun(0)/b/n/10.53937 源 码 已 打 包 成 \TU/lmr/bx/n/10.53937 EXE \TU/SimSun
-(0)/b/n/10.53937 可 执 行 文 件。|  可 以 直 接 在 \TU/lmtt/b/n/10.53937 src/build/Desktop
-_Qt_6_9_3_MinGW_64_bit-Release
- []
-
-File: 用户用例图.pdf Graphic file (type pdf)
-<用户用例图.pdf>
-
-Overfull \hbox (241.84843pt too wide) in paragraph at lines 75--76
- [][] 
- []
-
-
-
-[3]
-
-[4]
-File: 用户登录功能.png Graphic file (type bmp)
-<用户登录功能.png>
-File: 用户注册功能.png Graphic file (type bmp)
-<用户注册功能.png>
-File: 查询余票功能.png Graphic file (type bmp)
-<查询余票功能.png>
-
-
-[5]
-File: 选择查询日期.png Graphic file (type bmp)
-<选择查询日期.png>
-File: 查看余票查询结果.png Graphic file (type bmp)
-<查看余票查询结果.png>
-
-
-[6]
-File: 选择乘车人功能.png Graphic file (type bmp)
-<选择乘车人功能.png>
-
-
-[7]
-File: 提交订单功能.png Graphic file (type bmp)
-<提交订单功能.png>
-File: 我的订单管理功能.png Graphic file (type bmp)
-<我的订单管理功能.png>
-
-
-[8]
-File: 乘车人信息管理功能.png Graphic file (type bmp)
-<乘车人信息管理功能.png>
-File: 个人信息修改与账号管理功能.png Graphic file (type bmp)
-<个人信息修改与账号管理功能.png>
-
-
-[9]
 File: 管理员用例图.pdf Graphic file (type pdf)
 <管理员用例图.pdf>
 
-Overfull \hbox (241.84843pt too wide) in paragraph at lines 175--176
+Overfull \hbox (241.84843pt too wide) in paragraph at lines 101--102
  [][] 
  []
 
 
 
-[10]
-File: 管理员登录功能.png Graphic file (type bmp)
-<管理员登录功能.png>
+[5]
 
+[6]
 
-[11]
-File: 车次管理功能.png Graphic file (type bmp)
-<车次管理功能.png>
-File: 修改时刻表功能.png Graphic file (type bmp)
-<修改时刻表功能.png>
+[7]
 
-
-[12]
-File: 修改座位模板功能.png Graphic file (type bmp)
-<修改座位模板功能.png>
-File: 管理员订单管理功能.png Graphic file (type bmp)
-<管理员订单管理功能.png>
-
-
-[13]
-File: 账户管理功能.png Graphic file (type bmp)
-<账户管理功能.png>
-File: 查看时刻表功能.png Graphic file (type bmp)
-<查看时刻表功能.png>
-
-
-[14]
-File: 数据文件.png Graphic file (type bmp)
-<数据文件.png>
-
-
-[15]
-
-[16]
-File: ./svg-inkscape/Time_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Time_svg-raw.pdf>
- (d:/Latex/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2024/09/23 1.10c listings language file
-)
-(d:/Latex/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2024/09/23 1.10c listings language file
-)
-(d:/Latex/texlive/2025/texmf-dist/tex/latex/listings/lstmisc.sty
-File: lstmisc.sty 2024/09/23 1.10c (Carsten Heinz)
-)
-
-[17]
-File: ./svg-inkscape/Date_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Date_svg-raw.pdf>
-
-
-[18]
-File: ./svg-inkscape/UserProfile_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/UserProfile_svg-raw.pdf>
-
-
-[19]
-File: ./svg-inkscape/User_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/User_svg-raw.pdf>
-
-
-[20]
-File: ./svg-inkscape/Admin_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Admin_svg-raw.pdf>
-File: ./svg-inkscape/Passenger_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Passenger_svg-raw.pdf>
-
-
-[21]
-File: ./svg-inkscape/Station_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Station_svg-raw.pdf>
-
-
-[22]
-File: ./svg-inkscape/City_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/City_svg-raw.pdf>
-
-
-[23]
-File: ./svg-inkscape/Timetable_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Timetable_svg-raw.pdf>
-
-
-[24]
-File: ./svg-inkscape/Train_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Train_svg-raw.pdf>
-
-
-[25]
-File: ./svg-inkscape/Order_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/Order_svg-raw.pdf>
-
-
-[26]
-
-[27]
-File: ./svg-inkscape/AccountManager_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/AccountManager_svg-raw.pdf>
-
-
-[28]
-
-[29]
-File: ./svg-inkscape/OrderManager_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/OrderManager_svg-raw.pdf>
-
-
-[30]
-
-[31]
-File: ./svg-inkscape/TrainManager_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/TrainManager_svg-raw.pdf>
-
-
-[32]
-File: ./svg-inkscape/PassengerManager_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/PassengerManager_svg-raw.pdf>
-
-
-[33]
-File: ./svg-inkscape/StationManager_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/StationManager_svg-raw.pdf>
-
-
-[34]
-File: ./svg-inkscape/BookingSystem_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/BookingSystem_svg-raw.pdf>
-
-
-[35]
-
-[36]
-File: 前端组件.png Graphic file (type bmp)
-<前端组件.png>
-
-
-[37]
-File: 前端页面.png Graphic file (type bmp)
-<前端页面.png>
-
-
-[38]
-File: ./svg-inkscape/类图_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/类图_svg-raw.pdf>
-
-
-[39]
-File: ./svg-inkscape/顺序图-登录_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-登录_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-注册_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-注册_svg-raw.pdf>
-
-
-[40]
-File: ./svg-inkscape/顺序图-查询历史_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-查询历史_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-查询余票_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-查询余票_svg-raw.pdf>
-
-
-[41]
-File: ./svg-inkscape/顺序图-预订车票_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-预订车票_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-我的订单_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-我的订单_svg-raw.pdf>
-
-
-[42]
-File: ./svg-inkscape/顺序图-查看订单时刻表_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-查看订单时刻表_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-乘车人信息_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-乘车人信息_svg-raw.pdf>
-
-
-[43]
-File: ./svg-inkscape/顺序图-取消订单_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-取消订单_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-修改乘车人信息_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-修改乘车人信息_svg-raw.pdf>
-
-
-[44]
-File: ./svg-inkscape/顺序图-删除乘车人信息_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-删除乘车人信息_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-添加乘车人信息_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-添加乘车人信息_svg-raw.pdf>
-
-
-[45]
-File: ./svg-inkscape/顺序图-修改个人信息_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-修改个人信息_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-用户注销_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-用户注销_svg-raw.pdf>
-
-
-[46]
-File: ./svg-inkscape/顺序图-车次管理_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-车次管理_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-车次管理时刻表_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-车次管理时刻表_svg-raw.pdf>
-
-
-[47]
-File: ./svg-inkscape/顺序图-删除列车_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-删除列车_svg-raw.pdf>
-
-
-[48]
-File: ./svg-inkscape/顺序图-添加列车_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-添加列车_svg-raw.pdf>
-
-
-[49]
-File: ./svg-inkscape/顺序图-订单管理_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-订单管理_svg-raw.pdf>
-
-
-[50]
-File: ./svg-inkscape/顺序图-改签_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-改签_svg-raw.pdf>
-
-
-[51]
-File: ./svg-inkscape/顺序图-退票_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-退票_svg-raw.pdf>
-
-
-[52]
-File: ./svg-inkscape/顺序图-用户管理_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-用户管理_svg-raw.pdf>
-
-
-[53]
-File: ./svg-inkscape/顺序图-重置密码_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-重置密码_svg-raw.pdf>
-File: ./svg-inkscape/顺序图-锁定_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-锁定_svg-raw.pdf>
-
-
-[54]
-File: ./svg-inkscape/顺序图-解锁_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/顺序图-解锁_svg-raw.pdf>
-
-
-[55]
-
-[56]
-File: ./svg-inkscape/活动图-预订车票_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/活动图-预订车票_svg-raw.pdf>
-File: ./svg-inkscape/活动图-修改乘车人信息_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/活动图-修改乘车人信息_svg-raw.pdf>
-
-
-[57]
-File: ./svg-inkscape/活动图-系统_svg-raw.pdf Graphic file (type pdf)
-<./svg-inkscape/活动图-系统_svg-raw.pdf>
-
-
-[58]
-
-[59]
-
-[60]
-Overfull \hbox (53.78174pt too wide) in paragraph at lines 1465--1466
-\TU/SimSun(0)/b/n/10.53937 查 找 与 该 区 间 时 间 窗 口 重 叠 且 未 使 用 的 订 单[] \TU/SimSun(0
-)/m/n/10.53937 调 用 \TU/lmr/m/n/10.53937 OrderManager::getOrdersUnusedAndOverlap
-ByTrainNumber(...)\TU/SimSun(0)/m/n/10.53937 ，|
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1481--1483
-
- []
-
-
-
-[61]
-
-[62]
-Underfull \hbox (badness 10000) in paragraph at lines 1564--1566
-
- []
-
-
-
-[63]
-Overfull \hbox (15.75504pt too wide) in paragraph at lines 1613--1614
-\TU/SimSun(0)/b/n/10.53937 用 户 数 据 清 理[] \TU/SimSun(0)/m/n/10.53937 清 理 阶 段 依 次
- 执 行 三 步。|  第 一 步 调 用 \TU/lmtt/m/n/10.53937 order_manager->deleteOrdersByUserna
-me(username)
- []
-
-
-Overfull \hbox (243.19528pt too wide) in paragraph at lines 1613--1614
-\TU/SimSun(0)/m/n/10.53937 与 目 标 \TU/lmtt/m/n/10.53937 username\TU/SimSun(0)/m/
-n/10.53937 ；|  匹 配 则 执 行 \TU/lmtt/m/n/10.53937 erase(it) \TU/SimSun(0)/m/n/10.5
-3937 删 除 并 继 续 迭 代，|  不 匹 配 则 迭 代 器 后 移。|  第 二 步 调 用 \TU/lmtt/m/n/10.53937 pass
-enger_manager->deletePassengersByUsername(username)
- []
-
-
-Overfull \hbox (14.1592pt too wide) in paragraph at lines 1613--1614
-\TU/SimSun(0)/m/n/10.53937 删 除 该 用 户 的 全 部 乘 车 人 信 息，|  算 法 结 构 与 订 单 删 除 相 同：|
-  遍 历 \TU/lmtt/m/n/10.53937 passengers\TU/SimSun(0)/m/n/10.53937 ，|  比 较 \TU/lm
-tt/m/n/10.53937 passenger.getUsername()\TU/SimSun(0)/m/n/10.53937 ，|
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1615--1617
-
- []
-
-
-
-[64]
-File: 页面跳转逻辑图.pdf Graphic file (type pdf)
-<页面跳转逻辑图.pdf>
-
-Overfull \hbox (22.83617pt too wide) in paragraph at lines 1648--1649
-\TU/SimSun(0)/m/n/10.53937 城 市 列 表，|  用 户 选 择 出 发 地 和 目 的 地 后 点 击 查 询；|  同 时 会 
-调 用 \TU/lmtt/m/n/10.53937 bookingSystem.addQueryHistory_api(from,to)
- []
-
-
-
-[65]
-
-[66]
-
-[67] (./需求分析.aux)
+[8] (./需求分析.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2022/08/05>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 14667 strings out of 468389
- 369080 string characters out of 5441542
- 1487040 words of memory out of 5000000
- 42875 multiletter control sequences out of 15000+600000
- 630567 words of font info for 81 fonts, out of 8000000 for 9000
+ 12658 strings out of 468389
+ 314478 string characters out of 5441542
+ 777877 words of memory out of 5000000
+ 40950 multiletter control sequences out of 15000+600000
+ 630527 words of font info for 76 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 94i,6n,111p,656b,1752s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 94i,5n,111p,416b,350s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on 需求分析.pdf (67 pages).
+Output written on 需求分析.pdf (8 pages).

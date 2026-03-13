@@ -1,0 +1,81 @@
+\contentsline {section}{\numberline {1}项目概述}{3}{}%
+\contentsline {section}{\numberline {2}需求分析}{4}{}%
+\contentsline {subsection}{\numberline {2.1}功能性需求}{4}{}%
+\contentsline {subsubsection}{\numberline {2.1.1}普通用户功能}{4}{}%
+\contentsline {paragraph}{登录}{5}{}%
+\contentsline {paragraph}{注册}{5}{}%
+\contentsline {paragraph}{查询余票}{6}{}%
+\contentsline {paragraph}{查看余票查询结果}{7}{}%
+\contentsline {paragraph}{选择乘车人功能}{8}{}%
+\contentsline {paragraph}{我的订单管理功能}{9}{}%
+\contentsline {paragraph}{乘车人信息管理功能}{9}{}%
+\contentsline {paragraph}{个人信息修改与账号管理功能}{10}{}%
+\contentsline {paragraph}{乘车人信息管理功能}{10}{}%
+\contentsline {subsubsection}{\numberline {2.1.2}管理员功能}{11}{}%
+\contentsline {paragraph}{登录}{12}{}%
+\contentsline {paragraph}{车次管理功能}{13}{}%
+\contentsline {paragraph}{订单管理功能}{14}{}%
+\contentsline {paragraph}{账户管理功能}{14}{}%
+\contentsline {subsubsection}{\numberline {2.1.3}通用功能}{14}{}%
+\contentsline {paragraph}{查看订单/车次/余票的时刻表}{15}{}%
+\contentsline {paragraph}{数据装载与保存}{15}{}%
+\contentsline {subsection}{\numberline {2.2}非功能性需求}{16}{}%
+\contentsline {subsubsection}{\numberline {2.2.1}可维护性}{16}{}%
+\contentsline {subsubsection}{\numberline {2.2.2}可扩展性}{16}{}%
+\contentsline {subsubsection}{\numberline {2.2.3}易用性}{16}{}%
+\contentsline {subsubsection}{\numberline {2.2.4}数据安全性}{16}{}%
+\contentsline {section}{\numberline {3}系统总体设计}{16}{}%
+\contentsline {subsection}{\numberline {3.1}系统架构}{16}{}%
+\contentsline {subsection}{\numberline {3.2}代码规范}{17}{}%
+\contentsline {subsection}{\numberline {3.3}类的静态设计}{17}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}基本实体类}{17}{}%
+\contentsline {paragraph}{\texttt {Time}：时间类}{18}{}%
+\contentsline {paragraph}{\texttt {Date}：日期类}{19}{}%
+\contentsline {paragraph}{\texttt {UserProfile}：用户个人信息类}{20}{}%
+\contentsline {paragraph}{\texttt {User}：用户类}{21}{}%
+\contentsline {paragraph}{\texttt {Admin}：管理员类}{21}{}%
+\contentsline {paragraph}{\texttt {Passenger}：乘车人类}{22}{}%
+\contentsline {paragraph}{\texttt {Station}：车站类}{23}{}%
+\contentsline {paragraph}{\texttt {City}：城市类}{24}{}%
+\contentsline {paragraph}{\texttt {Timetable}：时刻表类}{25}{}%
+\contentsline {paragraph}{\texttt {Train}：车次类}{26}{}%
+\contentsline {paragraph}{\texttt {Order}：订单类}{28}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}数据管理类}{28}{}%
+\contentsline {paragraph}{\texttt {AccountManager}：账户管理类}{30}{}%
+\contentsline {paragraph}{\texttt {OrderManager}：订单管理类}{32}{}%
+\contentsline {paragraph}{\texttt {TrainManager}：车次管理类}{33}{}%
+\contentsline {paragraph}{\texttt {PassengerManager}：乘车人管理类}{34}{}%
+\contentsline {paragraph}{\texttt {StationManager}：车站管理类}{35}{}%
+\contentsline {subsubsection}{\numberline {3.3.3}顶层系统类}{35}{}%
+\contentsline {paragraph}{\texttt {BookingSystem}：订票系统类}{36}{}%
+\contentsline {subsection}{\numberline {3.4}前端总体设计}{37}{}%
+\contentsline {subsubsection}{\numberline {3.4.1}组件（Components）}{37}{}%
+\contentsline {subsubsection}{\numberline {3.4.2}页面（Pages）}{38}{}%
+\contentsline {subsubsection}{\numberline {3.4.3}前后端通信机制}{39}{}%
+\contentsline {subsection}{\numberline {3.5}类图}{40}{}%
+\contentsline {subsection}{\numberline {3.6}关键顺序图}{41}{}%
+\contentsline {subsection}{\numberline {3.7}关键活动图}{58}{}%
+\contentsline {section}{\numberline {4}主要功能算法设计}{60}{}%
+\contentsline {subsection}{\numberline {4.1}余票查询功能设计}{60}{}%
+\contentsline {paragraph}{依赖检查}{60}{}%
+\contentsline {paragraph}{获取可达车次方案（候选路线集合）}{60}{}%
+\contentsline {paragraph}{读取该车次各席别总座位数作为初始余票}{60}{}%
+\contentsline {paragraph}{计算该区间的出发/到达日期时间范围}{61}{}%
+\contentsline {paragraph}{查找与该区间时间窗口重叠且未使用的订单}{61}{}%
+\contentsline {paragraph}{按席别扣减余票}{61}{}%
+\contentsline {paragraph}{组织返回结果}{61}{}%
+\contentsline {subsection}{\numberline {4.2}提交订单功能设计}{62}{}%
+\contentsline {paragraph}{查询空闲乘车人}{62}{}%
+\contentsline {paragraph}{提交订单}{63}{}%
+\contentsline {subsection}{\numberline {4.3}用户注销功能设计}{64}{}%
+\contentsline {paragraph}{检查用户是否存在}{64}{}%
+\contentsline {paragraph}{用户数据清理}{64}{}%
+\contentsline {paragraph}{返回结果}{64}{}%
+\contentsline {section}{\numberline {5}前端开发}{64}{}%
+\contentsline {subsection}{\numberline {5.1}总体设计}{64}{}%
+\contentsline {subsection}{\numberline {5.2}登录界面}{65}{}%
+\contentsline {subsection}{\numberline {5.3}订单流程页面（从查询到提交）}{66}{}%
+\contentsline {subsection}{\numberline {5.4}订单管理界面（用户/管理员）}{66}{}%
+\contentsline {subsection}{\numberline {5.5}管理员后台页面}{66}{}%
+\contentsline {subsection}{\numberline {5.6}页面组织与导航（StackView + Loader）}{66}{}%
+\contentsline {section}{\numberline {6}总结与感想}{67}{}%

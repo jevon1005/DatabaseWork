@@ -1,0 +1,225 @@
+Date : 2025-11-28 23:37:53
+Directory : d:\study\train\RailwaySystem
+Total : 174 files,  916 codes, 131 comments, 123 blanks, all 1170 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| qml      |         46 |      8,016 |      1,136 |      1,059 |     10,211 |
+| C++      |         70 |        466 |         37 |         56 |        559 |
+| Markdown |          6 |        141 |          0 |         26 |        167 |
+| SVG      |          1 |         48 |          0 |          1 |         49 |
+| JSON     |          1 |          1 |          0 |          0 |          1 |
+| CMake    |          2 |          0 |          0 |          0 |          0 |
+| XML      |          1 |        -48 |          0 |         -1 |        -49 |
+| Qrc      |          1 |        -66 |          0 |         -1 |        -67 |
+| QML      |         46 |     -7,642 |     -1,042 |     -1,017 |     -9,701 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                            | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                               |         89 |     11,106 |      1,208 |      1,551 |     13,865 |
+| . (Files)                                                                       |         38 |      3,112 |        102 |        506 |      3,720 |
+| .VSCodeCounter                                                                  |          5 |        142 |          0 |         26 |        168 |
+| .VSCodeCounter\2025-11-20_22-46-21                                              |          5 |        142 |          0 |         26 |        168 |
+| e:\                                                                             |         85 |    -10,190 |     -1,077 |     -1,428 |    -12,695 |
+| e:\WYH                                                                          |         85 |    -10,190 |     -1,077 |     -1,428 |    -12,695 |
+| e:\WYH\RailwaySystem                                                            |         85 |    -10,190 |     -1,077 |     -1,428 |    -12,695 |
+| e:\WYH\RailwaySystem (Files)                                                    |         39 |     -2,712 |        -65 |       -451 |     -3,228 |
+| e:\WYH\RailwaySystem\qml                                                        |         45 |     -7,430 |     -1,012 |       -976 |     -9,418 |
+| e:\WYH\RailwaySystem\qml (Files)                                                |          2 |        -95 |         -7 |        -14 |       -116 |
+| e:\WYH\RailwaySystem\qml\components                                             |         20 |     -2,266 |       -196 |       -312 |     -2,774 |
+| e:\WYH\RailwaySystem\qml\pages                                                  |         23 |     -5,069 |       -809 |       -650 |     -6,528 |
+| e:\WYH\RailwaySystem\resources                                                  |          1 |        -48 |          0 |         -1 |        -49 |
+| e:\WYH\RailwaySystem\resources\icon                                             |          1 |        -48 |          0 |         -1 |        -49 |
+| qml                                                                             |         45 |      7,804 |      1,106 |      1,018 |      9,928 |
+| qml (Files)                                                                     |          2 |         95 |          7 |         14 |        116 |
+| qml\components                                                                  |         20 |      2,400 |        228 |        337 |      2,965 |
+| qml\pages                                                                       |         23 |      5,309 |        871 |        667 |      6,847 |
+| resources                                                                       |          1 |         48 |          0 |          1 |         49 |
+| resources\icon                                                                  |          1 |         48 |          0 |          1 |         49 |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                        | language | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\details.md      | Markdown |         94 |          0 |          6 |        100 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\diff-details.md | Markdown |          9 |          0 |          6 |         15 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\diff.md         | Markdown |         12 |          0 |          7 |         19 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\results.json    | JSON     |          1 |          0 |          0 |          1 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\results.md      | Markdown |         26 |          0 |          7 |         33 |
+| d:\study\train\RailwaySystem\CMakeLists.txt                                     | CMake    |         59 |          0 |         12 |         71 |
+| d:\study\train\RailwaySystem\README.md                                          | Markdown |         18 |          0 |          0 |         18 |
+| d:\study\train\RailwaySystem\accountmanager.cpp                                 | C++      |        250 |          1 |         23 |        274 |
+| d:\study\train\RailwaySystem\accountmanager.h                                   | C++      |         35 |          6 |          9 |         50 |
+| d:\study\train\RailwaySystem\admin.cpp                                          | C++      |         56 |          0 |         14 |         70 |
+| d:\study\train\RailwaySystem\admin.h                                            | C++      |         25 |          0 |          5 |         30 |
+| d:\study\train\RailwaySystem\bookingsystem.cpp                                  | C++      |        347 |         26 |         32 |        405 |
+| d:\study\train\RailwaySystem\bookingsystem.h                                    | C++      |         43 |          2 |          7 |         52 |
+| d:\study\train\RailwaySystem\city.cpp                                           | C++      |         30 |          0 |          9 |         39 |
+| d:\study\train\RailwaySystem\city.h                                             | C++      |         20 |          0 |          6 |         26 |
+| d:\study\train\RailwaySystem\date.cpp                                           | C++      |        123 |          3 |         25 |        151 |
+| d:\study\train\RailwaySystem\date.h                                             | C++      |         32 |          0 |          6 |         38 |
+| d:\study\train\RailwaySystem\main.cpp                                           | C++      |         40 |          3 |          8 |         51 |
+| d:\study\train\RailwaySystem\order.cpp                                          | C++      |        199 |          6 |         43 |        248 |
+| d:\study\train\RailwaySystem\order.h                                            | C++      |         69 |          0 |          7 |         76 |
+| d:\study\train\RailwaySystem\ordermanager.cpp                                   | C++      |        264 |          1 |         30 |        295 |
+| d:\study\train\RailwaySystem\ordermanager.h                                     | C++      |         38 |          7 |          8 |         53 |
+| d:\study\train\RailwaySystem\passenger.cpp                                      | C++      |         80 |          0 |         18 |         98 |
+| d:\study\train\RailwaySystem\passenger.h                                        | C++      |         32 |          0 |          6 |         38 |
+| d:\study\train\RailwaySystem\passengermanager.cpp                               | C++      |        135 |          3 |         12 |        150 |
+| d:\study\train\RailwaySystem\passengermanager.h                                 | C++      |         29 |          0 |          7 |         36 |
+| d:\study\train\RailwaySystem\qml\SessionState.qml                               | qml      |         12 |          0 |          3 |         15 |
+| d:\study\train\RailwaySystem\qml\components\AccountCard.qml                     | qml      |         83 |          8 |         12 |        103 |
+| d:\study\train\RailwaySystem\qml\components\BasicScrollBar.qml                  | qml      |         27 |          0 |          5 |         32 |
+| d:\study\train\RailwaySystem\qml\components\CheckButton.qml                     | qml      |         50 |          0 |          8 |         58 |
+| d:\study\train\RailwaySystem\qml\components\ConfirmCancelDialog.qml             | qml      |         71 |          1 |         17 |         89 |
+| d:\study\train\RailwaySystem\qml\components\ConfirmDialog.qml                   | qml      |        103 |          3 |         14 |        120 |
+| d:\study\train\RailwaySystem\qml\components\CustomButton.qml                    | qml      |         58 |          6 |         13 |         77 |
+| d:\study\train\RailwaySystem\qml\components\Header.qml                          | qml      |         54 |          2 |          8 |         64 |
+| d:\study\train\RailwaySystem\qml\components\MenuButton.qml                      | qml      |         80 |         26 |         15 |        121 |
+| d:\study\train\RailwaySystem\qml\components\MyCalendar.qml                      | qml      |        239 |         10 |         12 |        261 |
+| d:\study\train\RailwaySystem\qml\components\MyCheckBox.qml                      | qml      |         51 |          0 |          8 |         59 |
+| d:\study\train\RailwaySystem\qml\components\OrderCard.qml                       | qml      |        286 |         26 |         38 |        350 |
+| d:\study\train\RailwaySystem\qml\components\PassengerCard.qml                   | qml      |        113 |         16 |         25 |        154 |
+| d:\study\train\RailwaySystem\qml\components\SearchBar.qml                       | qml      |         44 |          0 |          6 |         50 |
+| d:\study\train\RailwaySystem\qml\components\SelectButton.qml                    | qml      |         62 |          6 |         11 |         79 |
+| d:\study\train\RailwaySystem\qml\components\SideBar.qml                         | qml      |         96 |          2 |         12 |        110 |
+| d:\study\train\RailwaySystem\qml\components\StationListView.qml                 | qml      |        165 |         22 |         29 |        216 |
+| d:\study\train\RailwaySystem\qml\components\TicketCard.qml                      | qml      |        348 |         28 |         27 |        403 |
+| d:\study\train\RailwaySystem\qml\components\TimetableView.qml                   | qml      |        267 |         55 |         43 |        365 |
+| d:\study\train\RailwaySystem\qml\components\TrainCard.qml                       | qml      |        120 |          2 |         16 |        138 |
+| d:\study\train\RailwaySystem\qml\components\test.qml                            | qml      |         83 |         15 |         18 |        116 |
+| d:\study\train\RailwaySystem\qml\main.qml                                       | qml      |         83 |          7 |         11 |        101 |
+| d:\study\train\RailwaySystem\qml\pages\AddPassengerDialog.qml                   | qml      |        173 |         13 |         16 |        202 |
+| d:\study\train\RailwaySystem\qml\pages\AddPassingStationDialog.qml              | qml      |        187 |         19 |         28 |        234 |
+| d:\study\train\RailwaySystem\qml\pages\AddUserDialog.qml                        | qml      |        143 |         10 |         17 |        170 |
+| d:\study\train\RailwaySystem\qml\pages\EditPassengerInfoDialog.qml              | qml      |        192 |          9 |         17 |        218 |
+| d:\study\train\RailwaySystem\qml\pages\EditPassingStationDialog.qml             | qml      |        187 |         19 |         28 |        234 |
+| d:\study\train\RailwaySystem\qml\pages\EditSeatTemplateDialog.qml               | qml      |        428 |         15 |         49 |        492 |
+| d:\study\train\RailwaySystem\qml\pages\Login.qml                                | qml      |        184 |         11 |         17 |        212 |
+| d:\study\train\RailwaySystem\qml\pages\MyOrders.qml                             | qml      |        291 |         28 |         28 |        347 |
+| d:\study\train\RailwaySystem\qml\pages\OrderConfirm.qml                         | qml      |        439 |         62 |         59 |        560 |
+| d:\study\train\RailwaySystem\qml\pages\OrderManagement.qml                      | qml      |        292 |         28 |         28 |        348 |
+| d:\study\train\RailwaySystem\qml\pages\PassengerInfo.qml                        | qml      |        289 |         19 |         29 |        337 |
+| d:\study\train\RailwaySystem\qml\pages\PersonalInfoDialog.qml                   | qml      |        165 |          9 |         15 |        189 |
+| d:\study\train\RailwaySystem\qml\pages\Profile.qml                              | qml      |        274 |         21 |         27 |        322 |
+| d:\study\train\RailwaySystem\qml\pages\RegisterDialog.qml                       | qml      |        252 |        403 |         63 |        718 |
+| d:\study\train\RailwaySystem\qml\pages\ResetPasswordDialog.qml                  | qml      |        124 |          9 |         15 |        148 |
+| d:\study\train\RailwaySystem\qml\pages\StationListDialog.qml                    | qml      |        104 |          7 |         20 |        131 |
+| d:\study\train\RailwaySystem\qml\pages\SubmitOrderDialog.qml                    | qml      |        194 |         35 |         21 |        250 |
+| d:\study\train\RailwaySystem\qml\pages\TicketQuery.qml                          | qml      |        319 |         20 |         48 |        387 |
+| d:\study\train\RailwaySystem\qml\pages\TicketQueryResult.qml                    | qml      |        455 |         92 |         54 |        601 |
+| d:\study\train\RailwaySystem\qml\pages\Timetable.qml                            | qml      |         24 |          0 |          5 |         29 |
+| d:\study\train\RailwaySystem\qml\pages\TimetableManagement.qml                  | qml      |        116 |          9 |         18 |        143 |
+| d:\study\train\RailwaySystem\qml\pages\TrainManagement.qml                      | qml      |        242 |         19 |         31 |        292 |
+| d:\study\train\RailwaySystem\qml\pages\UserManagement.qml                       | qml      |        235 |         14 |         34 |        283 |
+| d:\study\train\RailwaySystem\resources\icon\arrow.svg                           | SVG      |         48 |          0 |          1 |         49 |
+| d:\study\train\RailwaySystem\station.cpp                                        | C++      |         37 |          0 |         11 |         48 |
+| d:\study\train\RailwaySystem\station.h                                          | C++      |         22 |          0 |          6 |         28 |
+| d:\study\train\RailwaySystem\stationmanager.cpp                                 | C++      |         83 |          2 |         16 |        101 |
+| d:\study\train\RailwaySystem\stationmanager.h                                   | C++      |         25 |          0 |          6 |         31 |
+| d:\study\train\RailwaySystem\time.cpp                                           | C++      |         94 |          1 |         21 |        116 |
+| d:\study\train\RailwaySystem\time.h                                             | C++      |         29 |          0 |          7 |         36 |
+| d:\study\train\RailwaySystem\timetable.cpp                                      | C++      |        198 |          0 |         17 |        215 |
+| d:\study\train\RailwaySystem\timetable.h                                        | C++      |         28 |          9 |          6 |         43 |
+| d:\study\train\RailwaySystem\tmp.qml                                            | qml      |        212 |         30 |         41 |        283 |
+| d:\study\train\RailwaySystem\train.cpp                                          | C++      |         82 |          0 |         13 |         95 |
+| d:\study\train\RailwaySystem\train.h                                            | C++      |         26 |          0 |          7 |         33 |
+| d:\study\train\RailwaySystem\trainmanager.cpp                                   | C++      |        154 |          0 |         19 |        173 |
+| d:\study\train\RailwaySystem\trainmanager.h                                     | C++      |         27 |          2 |          8 |         37 |
+| d:\study\train\RailwaySystem\user.cpp                                           | C++      |         67 |          0 |         16 |         83 |
+| d:\study\train\RailwaySystem\user.h                                             | C++      |         29 |          0 |          6 |         35 |
+| d:\study\train\RailwaySystem\userprofile.cpp                                    | C++      |         49 |          0 |         13 |         62 |
+| d:\study\train\RailwaySystem\userprofile.h                                      | C++      |         26 |          0 |          6 |         32 |
+| e:\WYH\RailwaySystem\CMakeLists.txt                                             | CMake    |        -59 |          0 |        -12 |        -71 |
+| e:\WYH\RailwaySystem\README.md                                                  | Markdown |        -18 |          0 |          0 |        -18 |
+| e:\WYH\RailwaySystem\accountmanager.cpp                                         | C++      |       -250 |         -1 |        -23 |       -274 |
+| e:\WYH\RailwaySystem\accountmanager.h                                           | C++      |        -35 |         -6 |         -9 |        -50 |
+| e:\WYH\RailwaySystem\admin.cpp                                                  | C++      |        -56 |          0 |        -14 |        -70 |
+| e:\WYH\RailwaySystem\admin.h                                                    | C++      |        -25 |          0 |         -5 |        -30 |
+| e:\WYH\RailwaySystem\bookingsystem.cpp                                          | C++      |       -185 |        -14 |        -19 |       -218 |
+| e:\WYH\RailwaySystem\bookingsystem.h                                            | C++      |        -41 |          0 |         -7 |        -48 |
+| e:\WYH\RailwaySystem\city.cpp                                                   | C++      |        -30 |          0 |         -9 |        -39 |
+| e:\WYH\RailwaySystem\city.h                                                     | C++      |        -20 |          0 |         -6 |        -26 |
+| e:\WYH\RailwaySystem\date.cpp                                                   | C++      |        -46 |          0 |        -13 |        -59 |
+| e:\WYH\RailwaySystem\date.h                                                     | C++      |        -24 |          0 |         -5 |        -29 |
+| e:\WYH\RailwaySystem\images.qrc                                                 | Qrc      |        -66 |          0 |         -1 |        -67 |
+| e:\WYH\RailwaySystem\main.cpp                                                   | C++      |        -40 |         -3 |         -8 |        -51 |
+| e:\WYH\RailwaySystem\order.cpp                                                  | C++      |       -164 |          0 |        -36 |       -200 |
+| e:\WYH\RailwaySystem\order.h                                                    | C++      |        -65 |          0 |         -6 |        -71 |
+| e:\WYH\RailwaySystem\ordermanager.cpp                                           | C++      |       -193 |          0 |        -22 |       -215 |
+| e:\WYH\RailwaySystem\ordermanager.h                                             | C++      |        -28 |          0 |         -8 |        -36 |
+| e:\WYH\RailwaySystem\passenger.cpp                                              | C++      |        -80 |          0 |        -18 |        -98 |
+| e:\WYH\RailwaySystem\passenger.h                                                | C++      |        -32 |          0 |         -6 |        -38 |
+| e:\WYH\RailwaySystem\passengermanager.cpp                                       | C++      |        -88 |          0 |        -10 |        -98 |
+| e:\WYH\RailwaySystem\passengermanager.h                                         | C++      |        -26 |          0 |         -7 |        -33 |
+| e:\WYH\RailwaySystem\qml\SessionState.qml                                       | QML      |        -12 |          0 |         -3 |        -15 |
+| e:\WYH\RailwaySystem\qml\components\AccountCard.qml                             | QML      |        -83 |         -8 |        -12 |       -103 |
+| e:\WYH\RailwaySystem\qml\components\BasicScrollBar.qml                          | QML      |        -27 |          0 |         -5 |        -32 |
+| e:\WYH\RailwaySystem\qml\components\CheckButton.qml                             | QML      |        -50 |          0 |         -8 |        -58 |
+| e:\WYH\RailwaySystem\qml\components\ConfirmCancelDialog.qml                     | QML      |        -71 |         -1 |        -17 |        -89 |
+| e:\WYH\RailwaySystem\qml\components\ConfirmDialog.qml                           | QML      |        -52 |         -1 |         -9 |        -62 |
+| e:\WYH\RailwaySystem\qml\components\CustomButton.qml                            | QML      |        -58 |         -6 |        -13 |        -77 |
+| e:\WYH\RailwaySystem\qml\components\Header.qml                                  | QML      |        -54 |         -2 |         -8 |        -64 |
+| e:\WYH\RailwaySystem\qml\components\MenuButton.qml                              | QML      |        -80 |        -26 |        -15 |       -121 |
+| e:\WYH\RailwaySystem\qml\components\MyCalendar.qml                              | QML      |       -239 |        -10 |        -12 |       -261 |
+| e:\WYH\RailwaySystem\qml\components\MyCheckBox.qml                              | QML      |        -51 |          0 |         -8 |        -59 |
+| e:\WYH\RailwaySystem\qml\components\OrderCard.qml                               | QML      |       -280 |        -26 |        -38 |       -344 |
+| e:\WYH\RailwaySystem\qml\components\PassengerCard.qml                           | QML      |       -112 |        -16 |        -24 |       -152 |
+| e:\WYH\RailwaySystem\qml\components\SearchBar.qml                               | QML      |        -44 |          0 |         -6 |        -50 |
+| e:\WYH\RailwaySystem\qml\components\SelectButton.qml                            | QML      |        -62 |         -6 |        -11 |        -79 |
+| e:\WYH\RailwaySystem\qml\components\SideBar.qml                                 | QML      |        -96 |         -2 |        -12 |       -110 |
+| e:\WYH\RailwaySystem\qml\components\StationListView.qml                         | QML      |       -165 |        -22 |        -29 |       -216 |
+| e:\WYH\RailwaySystem\qml\components\TicketCard.qml                              | QML      |       -342 |        -28 |        -27 |       -397 |
+| e:\WYH\RailwaySystem\qml\components\TimetableView.qml                           | QML      |       -221 |        -36 |        -36 |       -293 |
+| e:\WYH\RailwaySystem\qml\components\TrainCard.qml                               | QML      |       -120 |         -2 |        -16 |       -138 |
+| e:\WYH\RailwaySystem\qml\components\test.qml                                    | QML      |        -59 |         -4 |         -6 |        -69 |
+| e:\WYH\RailwaySystem\qml\main.qml                                               | QML      |        -83 |         -7 |        -11 |       -101 |
+| e:\WYH\RailwaySystem\qml\pages\AddPassengerDialog.qml                           | QML      |       -173 |        -13 |        -16 |       -202 |
+| e:\WYH\RailwaySystem\qml\pages\AddPassingStationDialog.qml                      | QML      |       -187 |        -19 |        -28 |       -234 |
+| e:\WYH\RailwaySystem\qml\pages\AddUserDialog.qml                                | QML      |       -143 |        -10 |        -17 |       -170 |
+| e:\WYH\RailwaySystem\qml\pages\EditPassengerInfoDialog.qml                      | QML      |       -192 |         -9 |        -17 |       -218 |
+| e:\WYH\RailwaySystem\qml\pages\EditPassingStationDialog.qml                     | QML      |       -187 |        -19 |        -28 |       -234 |
+| e:\WYH\RailwaySystem\qml\pages\EditSeatTemplateDialog.qml                       | QML      |       -428 |        -15 |        -49 |       -492 |
+| e:\WYH\RailwaySystem\qml\pages\Login.qml                                        | QML      |       -184 |        -11 |        -17 |       -212 |
+| e:\WYH\RailwaySystem\qml\pages\MyOrders.qml                                     | QML      |       -249 |        -23 |        -26 |       -298 |
+| e:\WYH\RailwaySystem\qml\pages\OrderConfirm.qml                                 | QML      |       -365 |        -37 |        -51 |       -453 |
+| e:\WYH\RailwaySystem\qml\pages\OrderManagement.qml                              | QML      |       -250 |        -23 |        -26 |       -299 |
+| e:\WYH\RailwaySystem\qml\pages\PassengerInfo.qml                                | QML      |       -265 |        -19 |        -26 |       -310 |
+| e:\WYH\RailwaySystem\qml\pages\PersonalInfoDialog.qml                           | QML      |       -165 |         -9 |        -15 |       -189 |
+| e:\WYH\RailwaySystem\qml\pages\Profile.qml                                      | QML      |       -275 |        -21 |        -27 |       -323 |
+| e:\WYH\RailwaySystem\qml\pages\RegisterDialog.qml                               | QML      |       -252 |       -403 |        -63 |       -718 |
+| e:\WYH\RailwaySystem\qml\pages\ResetPasswordDialog.qml                          | QML      |       -124 |         -9 |        -15 |       -148 |
+| e:\WYH\RailwaySystem\qml\pages\StationListDialog.qml                            | QML      |       -104 |         -7 |        -20 |       -131 |
+| e:\WYH\RailwaySystem\qml\pages\SubmitOrderDialog.qml                            | QML      |       -144 |        -30 |        -21 |       -195 |
+| e:\WYH\RailwaySystem\qml\pages\TicketQuery.qml                                  | QML      |       -319 |        -20 |        -48 |       -387 |
+| e:\WYH\RailwaySystem\qml\pages\TicketQueryResult.qml                            | QML      |       -444 |        -70 |        -52 |       -566 |
+| e:\WYH\RailwaySystem\qml\pages\Timetable.qml                                    | QML      |        -24 |          0 |         -5 |        -29 |
+| e:\WYH\RailwaySystem\qml\pages\TimetableManagement.qml                          | QML      |       -116 |         -9 |        -18 |       -143 |
+| e:\WYH\RailwaySystem\qml\pages\TrainManagement.qml                              | QML      |       -243 |        -19 |        -31 |       -293 |
+| e:\WYH\RailwaySystem\qml\pages\UserManagement.qml                               | QML      |       -236 |        -14 |        -34 |       -284 |
+| e:\WYH\RailwaySystem\resources\icon\arrow.svg                                   | XML      |        -48 |          0 |         -1 |        -49 |
+| e:\WYH\RailwaySystem\station.cpp                                                | C++      |        -37 |          0 |        -11 |        -48 |
+| e:\WYH\RailwaySystem\station.h                                                  | C++      |        -22 |          0 |         -6 |        -28 |
+| e:\WYH\RailwaySystem\stationmanager.cpp                                         | C++      |        -66 |          0 |        -12 |        -78 |
+| e:\WYH\RailwaySystem\stationmanager.h                                           | C++      |        -24 |          0 |         -6 |        -30 |
+| e:\WYH\RailwaySystem\time.cpp                                                   | C++      |        -83 |          0 |        -18 |       -101 |
+| e:\WYH\RailwaySystem\time.h                                                     | C++      |        -28 |          0 |         -6 |        -34 |
+| e:\WYH\RailwaySystem\timetable.cpp                                              | C++      |       -189 |          0 |        -17 |       -206 |
+| e:\WYH\RailwaySystem\timetable.h                                                | C++      |        -28 |         -9 |         -6 |        -43 |
+| e:\WYH\RailwaySystem\tmp.qml                                                    | QML      |       -212 |        -30 |        -41 |       -283 |
+| e:\WYH\RailwaySystem\train.cpp                                                  | C++      |        -82 |          0 |        -13 |        -95 |
+| e:\WYH\RailwaySystem\train.h                                                    | C++      |        -26 |          0 |         -7 |        -33 |
+| e:\WYH\RailwaySystem\trainmanager.cpp                                           | C++      |       -146 |          0 |        -15 |       -161 |
+| e:\WYH\RailwaySystem\trainmanager.h                                             | C++      |        -27 |         -2 |         -8 |        -37 |
+| e:\WYH\RailwaySystem\user.cpp                                                   | C++      |        -67 |          0 |        -16 |        -83 |
+| e:\WYH\RailwaySystem\user.h                                                     | C++      |        -29 |          0 |         -6 |        -35 |
+| e:\WYH\RailwaySystem\userprofile.cpp                                            | C++      |        -49 |          0 |        -13 |        -62 |
+| e:\WYH\RailwaySystem\userprofile.h                                              | C++      |        -26 |          0 |         -6 |        -32 |
+| Total                                                                           |          |        916 |        131 |        123 |      1,170 |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

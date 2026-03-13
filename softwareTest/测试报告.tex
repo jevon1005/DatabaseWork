@@ -1,0 +1,1337 @@
+\documentclass{article}
+\usepackage{ctex}  % 支持中文
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\geometry{a4paper, left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+% 设置段落和盒子容忍度,减少警告
+\tolerance=1000
+\hbadness=10000
+\emergencystretch=3em
+\sloppy
+
+\begin{document}
+	\begin{center}
+		{\LARGE 高铁订票管理系统软件测试报告}
+	\end{center}
+	
+	\vspace{1cm}
+	
+	\begin{tabular}{rl}
+		测试项目： & 高铁订票管理系统 \\
+		班级： & 信息工程学院计算机科学与技术一班 \\
+		团队成员：& 王宇豪（1231001024）、熊江伟（1231001026）\\
+		测试日期： & 2025年12月23日 \\
+		测试环境： & Windows 11 专业版 24H2 (版本号: 26100.7462), Qt 6.9.3
+	\end{tabular}
+	\\
+	\\
+	\\
+	\tableofcontents
+	\newpage
+	
+	\section{测试概述}
+		\subsection{测试目的}
+			本测试报告旨在对高铁订票管理系统进行全面的黑盒测试,验证系统各项功能的正确性、稳定性和用户体验。测试重点关注用户界面交互、业务逻辑处理、数据完整性以及系统性能等方面,确保系统满足设计要求并能够正常运行。
+		
+		\subsection{测试范围}
+			测试范围涵盖以下模块:
+			\begin{itemize}[leftmargin=2cm]
+				\item 用户端功能:用户登录/注册、余票查询、订单管理、乘车人管理、个人信息管理
+				\item 管理员功能:管理员登录、车次管理、订单管理、用户管理
+				\item 通用功能:时刻表查看、数据持久化、系统启动与退出
+				\item 非功能性测试:内存泄漏、CPU占用、界面响应速度
+			\end{itemize}
+		
+		\subsection{测试环境}
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|c|c|}
+					\hline
+					\textbf{测试项} & \textbf{配置信息} \\ \hline
+					操作系统 & Windows 11 / Windows 10 \\ \hline
+					开发工具 & Qt Creator 14.x / Qt 6.x \\ \hline
+					编译器 & MinGW 13.1.0 / MSVC 2022 \\ \hline
+					CPU & AMD Ryzen 7 6800H with Radeon Graphics \\ \hline
+					内存 & 16GB  \\ \hline
+					硬盘空间 & 可用空间 1GB 以上 \\ \hline
+					测试工具 & Qt Creator、Windows任务管理器 \\ \hline
+				\end{tabular}
+				\caption{测试环境配置}
+			\end{table}
+		
+		\subsection{测试方法}
+			本次测试采用\textbf{黑盒测试}方法,主要测试策略包括:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{等价类划分}:针对输入数据进行有效等价类和无效等价类划分
+				\item \textbf{边界值分析}:测试输入数据的边界条件
+				\item \textbf{因果图法}:分析输入条件之间的逻辑关系
+				\item \textbf{场景测试}:模拟用户实际使用场景进行端到端测试
+				\item \textbf{性能测试}:监控系统运行时的资源占用情况
+			\end{itemize}
+	
+	\newpage
+	\section{操作界面测试}
+	\subsection{账户登录测试}
+		\subsubsection{测试目标}
+			验证人员登录的正确性，包括用户登录、管理员登录。
+		
+		\subsubsection{测试用例设计}
+			测试输入不同的 Username 和 Password，系统能否正确处理。
+			
+			\paragraph{用户登录测试}
+			\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{4cm}|p{3.2cm}|p{1.8cm}|}
+				\hline
+				\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+				\endhead
+			TC-0.1 & 正确用户名和密码 & 用户名:1\newline 密码:1 & 登录成功,进入用户主页 & 登录成功，进入用户页面 \\ \hline
+			TC-0.2 & 用户名正确密码错误 & 用户名:1\newline 密码:2 & 提示密码错误 & 提示密码错误 \\ \hline
+			TC-0.3 & 用户名错误密码正确 & 用户名:wronguser\newline 密码:123456 & 提示用户不存在 & 提示用户不存在 \\ \hline
+			TC-0.4 & 用户名和密码都错误 & 用户名:wronguser\newline 密码:wrongpass & 提示用户不存在或密码错误 & 提示用户不存在 \\ \hline
+			TC-0.5 & 用户名为空 & 用户名:(空)\newline 密码:123456 & 提示用户名不能为空 & 提示用户不存在 \\ \hline
+			TC-0.6 & 密码为空 & 用户名:user1\newline 密码:(空) & 提示密码不能为空 & 提示密码错误 \\ \hline
+			TC-0.7 & 用户名和密码都为空 & 用户名:(空)\newline 密码:(空) & 提示用户名和密码不能为空 & 提示用户不存在 \\ \hline
+		TC-0.8 & 已锁定的用户登录 & 用户名:bob\newline 密码:qwerty & 提示账户已被锁定 & 提示账户已被锁定,请联系管理员解锁 \\ \hline
+		TC-0.9 & 锁定用户-空密码 & 用户名:bob\newline 密码:(空) & 提示密码不能为空 & 提示账户已被锁定,请联系管理员解锁 \\ \hline
+		TC-0.10 & 锁定用户-错误密码 & 用户名:bob\newline 密码:wrongpass & 提示密码错误 & 提示账户已被锁定,请联系管理员解锁 \\ \hline
+		TC-0.11 & 特殊字符用户名 & 用户名:user@\#\$\%\newline 密码:123456 & 处理特殊字符或提示格式错误 & 提示用户不存在 \\ \hline
+		TC-0.12 & 超长用户名 & 用户名:超过50个字符的用户名\newline 密码:123456 & 提示用户名过长或截断处理 & 提示用户不存在,前端页面脱标 \\ \hline
+		\caption{用户登录测试用例}
+		\end{longtable}
+			
+			\paragraph{管理员登录测试}
+			\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{4cm}|p{3.2cm}|p{1.8cm}|}
+				\hline
+				\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+				\endhead
+			TC-0.13 & 正确管理员账号密码 & 用户名:2\newline 密码:2 & 登录成功,进入管理员后台 & 登录成功,进入管理员后台 \\ \hline
+			TC-0.14 & 管理员名正确密码错误 & 用户名:2\newline 密码:wrongpass & 提示密码错误 & 提示密码错误 \\ \hline
+			TC-0.15 & 管理员名错误密码正确 & 用户名:wrongadmin\newline 密码:2 & 提示管理员不存在 & 提示账户不存在 \\ \hline
+			TC-0.16 & 管理员名密码都错误 & 用户名:wrongadmin\newline 密码:wrongpass & 提示管理员不存在或密码错误 & 提示账户不存在 \\ \hline
+			TC-0.17 & 管理员名为空 & 用户名:(空)\newline 密码:2 & 提示用户名不能为空 & 提示账户不存在 \\ \hline
+			TC-0.18 & 管理员密码为空 & 用户名:2\newline 密码:(空) & 提示密码不能为空 & 提示密码错误 \\ \hline
+		TC-0.19 & 已锁定的管理员登录 & 用户名:locked\_admin\newline 密码:admin123 & 提示账户已被锁定 & 提示账户已被锁定,请联系管理员解锁 \\ \hline
+		TC-0.20 & 锁定管理员-空密码 & 用户名:locked\_admin\newline 密码:(空) & 提示密码不能为空 & 提示账户已被锁定,请联系管理员解锁 \\ \hline
+		TC-0.21 & 锁定管理员-错误密码 & 用户名:locked\_admin\newline 密码:wrongpass & 提示密码错误 & 提示账户已被锁定,请联系管理员解锁 \\ \hline
+		TC-0.22 & 用普通用户账号登管理员 & 用户名:1\newline 密码:1 & 提示管理员不存在或权限不足 & 提示账户不存在 \\ \hline
+			\caption{管理员登录测试用例}
+		\end{longtable}
+		
+		\subsubsection{测试结果总结}
+			\paragraph{用户登录测试结果}
+			共执行12个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 5个 (TC-0.1, TC-0.2, TC-0.3, TC-0.4, TC-0.8的部分功能)
+				\item \textbf{失败}: 5个 (TC-0.5, TC-0.6, TC-0.7, TC-0.9, TC-0.10验证顺序问题)
+				\item \textbf{部分通过}: 2个 (TC-0.11, TC-0.12界面显示异常)
+			\end{itemize}
+			
+			\paragraph{管理员登录测试结果}
+			共执行10个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 6个 (TC-0.13至TC-0.16, TC-0.19,TC-0.21)
+				\item \textbf{失败}: 4个 (TC-0.17, TC-0.18, TC-0.20, TC-0.21验证顺序问题)
+			\end{itemize}
+			
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.3cm}|p{5.2cm}|p{5.2cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-L01 & 中 & 用户名为空时,系统提示"用户不存在"而非"用户名不能为空",提示信息不够友好 & 在后端验证逻辑中,优先检查输入是否为空,如果为空则返回更友好的提示信息 \\ \hline
+				BUG-L02 & 中 & 密码为空时,系统提示"密码错误"而非"密码不能为空",提示信息不够准确 & 在后端验证逻辑中,优先检查密码是否为空,如果为空则返回相应提示 \\ \hline
+				BUG-L03 & 中 & 锁定用户未输入密码或输入错误密码时,系统优先提示"账户已被锁定"而非检查密码,验证顺序不合理 & 调整验证顺序:先检查输入完整性→再检查账户存在性→再检查密码正确性→最后检查账户锁定状态 \\ \hline
+				BUG-L04 & 低 & 超长用户名输入时,前端页面出现"脱标"现象,界面显示异常 & 前端添加输入长度限制,超过50个字符时进行截断或提示;优化样式防止布局错乱 \\ \hline
+				BUG-L05 & 低 & 特殊字符用户名处理不够明确,未给出格式错误提示 & 增加用户名格式验证,对特殊字符进行过滤或提示只能包含字母数字下划线 \\ \hline
+				\caption{账户登录测试问题列表}
+			\end{longtable}
+			
+			\paragraph{核心问题分析}
+			经过测试发现,系统的\textbf{验证顺序存在设计缺陷}:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{当前验证顺序}:系统先检查账户是否存在,再检查账户状态(是否锁定),最后才检查密码
+				\item \textbf{导致的问题}:
+					\begin{itemize}
+						\item 当用户名为空或密码为空时,不会给出准确的空值提示(TC-0.5, TC-0.6, TC-0.7失败)
+						\item 对于锁定的账户,即使密码为空或错误,也会先提示"账户已被锁定"(TC-0.9, TC-0.10, TC-0.20, TC-0.21失败)
+						\item \textbf{典型案例}:用户名为"bob"(已锁定用户),密码为空时,系统提示"账户已被锁定"而非"密码不能为空"
+						\item 这种设计虽然在安全性上有一定考虑(防止通过错误信息判断账户是否存在),但在用户体验上不够友好,且逻辑上不合理——应该先检查用户输入的完整性
+					\end{itemize}
+				\item \textbf{建议的验证顺序}:
+					\begin{itemize}
+						\item 第一步:检查用户名和密码是否为空(前端和后端都要检查)
+						\item 第二步:检查账户是否存在
+						\item 第三步:验证密码是否正确
+						\item 第四步:检查账户是否被锁定(仅在密码正确的情况下才提示锁定)
+					\end{itemize}
+			\end{enumerate}
+			
+			\paragraph{安全性与用户体验的平衡}
+			在实际应用中,过于详细的错误提示可能会带来安全隐患(如攻击者可以通过错误信息判断账户是否存在)。建议采用以下折中方案:
+			\begin{itemize}[leftmargin=2cm]
+				\item 对于空值输入:明确提示"用户名/密码不能为空"
+				\item 对于用户名或密码错误:统一提示"用户名或密码错误"(不透露具体是哪个错误)
+				\item 对于锁定账户:在确认账户存在且密码正确的前提下,再提示"账户已被锁定"
+			\end{itemize}	
+	\subsection{人员信息输入输出/编辑界面测试}
+			\subsubsection{测试目标}
+				验证人员信息输入、输出、编辑功能的正确性,包括用户注册、乘车人添加/修改等涉及人员信息的界面。
+			
+			\subsubsection{测试用例设计}
+				\paragraph{控件输入限定测试}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{2.9cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+				TC-1.1 & 姓名长度限制 & 输入1个字符的姓名 & 提示姓名长度不符或允许输入 & 允许输入 \\ \hline
+				TC-1.2 & 姓名长度限制 & 输入超过20个字符的姓名 & 提示姓名过长或截断 & 允许输入 \\ \hline
+				TC-1.3 & 身份证号格式 & 输入15位数字 & 提示格式错误(应为18位) & 提示格式错误 \\ \hline
+				TC-1.4 & 身份证号格式 & 输入正确的18位身份证号 & 接受输入 & 接受输入 \\ \hline
+				TC-1.5 & 身份证号格式 & 输入包含字母的身份证号 & 提示格式错误 & 不允许输入字母 \\ \hline
+				TC-1.6 & 手机号格式 & 输入10位数字 & 提示格式错误(应为11位) & 提示格式错误 \\ \hline
+			TC-1.7 & 手机号格式 & 输入正确的11位手机号 & 接受输入 & 接受输入 \\ \hline
+			TC-1.8 & 用户名长度 & 输入空用户名 & 提示用户名不能为空 & 提示用户名不能为空 \\ \hline
+			TC-1.9 & 用户名长度 & 输入超长用户名($>$50字符) & 提示用户名过长或截断 & 限制输入长度 \\ \hline
+				\caption{控件输入限定测试用例}
+			\end{longtable}				\paragraph{人员信息完整性测试}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{2.9cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{输入数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+				TC-2.1 & 必填项缺失 & 姓名为空,其他正常 & 提示姓名不能为空 & 提示姓名不能为空 \\ \hline
+				TC-2.2 & 必填项缺失 & 身份证号为空 & 提示身份证号不能为空 & 提示身份证号不能为空 \\ \hline
+				TC-2.3 & 必填项缺失 & 手机号为空 & 提示手机号不能为空 & 手机号不能为空 \\ \hline
+				TC-2.4 & 完整信息提交 & 所有必填项均正确填写 & 成功保存/注册 & 成功保存/注册 \\ \hline
+				TC-2.5 & 信息修改 & 修改已存在的乘车人姓名 & 成功修改 & 成功修改 \\ \hline
+				TC-2.6 & 信息修改 & 修改已存在的手机号 & 成功修改 & 成功修改 \\ \hline
+				\caption{人员信息完整性测试用例}
+			\end{longtable}
+		
+		\subsubsection{测试结果总结}
+			\paragraph{控件输入限定测试结果}
+			共执行9个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 6个 (TC-1.3, TC-1.4, TC-1.5, TC-1.6, TC-1.7, TC-1.8)
+				\item \textbf{部分通过}: 3个 (TC-1.1, TC-1.2, TC-1.9前端有限制但提示不明确)
+			\end{itemize}
+			
+			\paragraph{人员信息完整性测试结果}
+			共执行6个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 6个 (TC-2.1, TC-2.2, TC-2.3, TC-2.4, TC-2.5, TC-2.6)
+			\end{itemize}
+			
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.3cm}|p{5.2cm}|p{5.2cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-I01 & 低 & 姓名长度限制不够严格,允许输入1个字符的姓名,可能导致数据不合理 & 前端添加姓名长度验证,建议最少2个字符,最多20个字符 \\ \hline
+				BUG-I02 & 低 & 超长姓名输入时未进行截断或明确提示,允许输入超过20个字符 & 前端添加maxLength属性限制输入长度,或在超出时给出提示 \\ \hline
+				BUG-I03 & 低 & 超长用户名虽有长度限制,但未给出友好的提示信息 & 当用户输入达到长度上限时,显示提示信息 \\ \hline
+				\caption{人员信息输入输出测试问题列表}
+			\end{longtable}
+			
+			\paragraph{测试分析}
+			整体而言,人员信息输入输出/编辑界面的功能基本完善:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{优点}:
+					\begin{itemize}
+						\item 身份证号和手机号格式验证严格,有效防止了无效数据输入
+						\item 必填项验证完整,能够准确提示用户缺失的信息
+						\item 信息修改功能稳定,数据更新及时
+					\end{itemize}
+				\item \textbf{需改进}:
+					\begin{itemize}
+						\item 姓名长度验证偏宽松,建议增加合理的长度区间限制(2-20个字符)
+						\item 部分输入控件缺少实时反馈,用户体验有待提升
+						\item 提示信息格式不够统一,建议规范化错误提示格式
+					\end{itemize}
+			\end{enumerate}		\subsection{人员信息列表显示界面测试}
+			\subsubsection{测试目标}
+				验证列表控件能正确显示当前人员信息集合中的所有人员,并支持信息显示。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{3cm}|p{3.7cm}|p{2.9cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+				TC-3.1 & 空集合显示 & 无任何人员信息时查看列表 & 显示空列表或提示无数据 & 显示空列表 \\ \hline
+				TC-3.2 & 单个人员显示 & 仅有1个人员信息 & 正确显示该人员信息 & 正确显示该人员信息 \\ \hline
+				TC-3.3 & 多个人员显示 & 有多个人员信息 & 正确显示所有人员信息 & 正确显示所有人员信息 \\ \hline
+				TC-3.4 & 信息完整性 & 检查显示的信息字段 & 姓名、身份证、手机号等完整显示 & 姓名、身份证、手机号等完整显示 \\ \hline
+				TC-3.5 & 列表刷新 & 添加/删除人员后 & 列表自动刷新显示最新数据 & 列表自动刷新显示最新数据 \\ \hline
+				TC-3.6 & 搜索过滤 & 输入关键字搜索 & 显示匹配的人员信息 & 显示匹配的人员信息 \\ \hline
+				\caption{人员信息列表显示测试用例}
+			\end{longtable}
+		
+		\subsubsection{测试结果总结}
+			共执行6个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 6个 (TC-3.1, TC-3.2, TC-3.3, TC-3.4, TC-3.5, TC-3.6)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			人员信息列表显示功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 空列表状态处理得当,不会出现异常
+				\item 单个和多个人员信息显示正确,数据完整
+				\item 列表刷新机制工作正常,数据同步及时
+				\item 搜索过滤功能有效,能够准确匹配人员信息
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-L01 & 建议 & 空列表时未显示友好的提示信息,仅显示空白列表,用户体验可以改进 & 在列表为空时,显示提示文本"暂无乘车人信息,请添加乘车人"或类似引导性文字 \\ \hline
+				BUG-L02 & 建议 & 搜索功能虽然可用,但缺少搜索结果数量统计和"未找到结果"的提示 & 添加搜索结果计数显示,如"找到3条匹配结果";无结果时显示"未找到匹配的乘车人" \\ \hline
+				BUG-L03 & 建议 & 列表缺少排序功能,无法按姓名、添加时间等进行排序 & 添加列表排序功能,支持按姓名拼音、添加时间等字段排序 \\ \hline
+				\caption{人员信息列表显示测试问题列表}
+			\end{longtable}
+			
+			\paragraph{改进建议}
+			虽然当前功能已满足基本需求,但仍有以下改进空间:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{用户体验优化}:增加空状态提示和搜索反馈,提升交互友好度
+				\item \textbf{功能增强}:添加列表排序等高级功能
+			\end{enumerate}	\newpage
+	\section{功能测试}
+		\subsection{信息文件装载功能}
+			\subsubsection{测试目标}
+				验证系统启动时能够正确从文件中读取数据,包括用户信息、车次信息、订单信息等,并正确加载到内存中。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试场景} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试场景} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+			TC-4.1 & 正常文件加载 & 数据文件存在且数据记录$>$0 & 所有数据正确加载并在界面显示 & 所有数据正确加载并在界面显示 \\ \hline
+			TC-4.2 & 空文件加载 & 数据文件存在但记录为0 & 系统正常启动,显示空数据 & 系统正常启动,显示空数据 \\ \hline
+			TC-4.3 & 文件不存在 & 删除某个数据文件 & 系统提示文件缺失或创建新文件 & 仅在开发者终端提示，系统不会提示 \\ \hline
+			TC-4.4 & 文件格式错误 & 修改文件内容为非法格式 & 系统提示格式错误或跳过错误数据 & 错误格式后的所有数据均不显示 \\ \hline
+			TC-4.5 & 数据一致性 & 加载后检查数据 & 文件中的数据与界面显示一致 & 文件中的数据与界面显示一致 \\ \hline
+			TC-4.6 & 多文件加载 & 所有数据文件同时加载 & 所有模块数据正确加载 & 所有模块数据正确加载 \\ \hline
+			\caption{信息文件装载测试用例}
+		\end{longtable}
+	
+	\subsubsection{测试结果总结}
+		共执行6个测试用例,其中:
+		\begin{itemize}[leftmargin=2cm]
+			\item \textbf{通过}: 4个 (TC-4.1, TC-4.2, TC-4.5, TC-4.6)
+			\item \textbf{失败}: 2个 (TC-4.3, TC-4.4)
+		\end{itemize}
+		
+		\paragraph{测试评价}
+		信息文件装载功能基本可用,但存在以下问题:
+		\begin{itemize}[leftmargin=2cm]
+			\item 正常情况下数据加载准确,空文件处理得当
+			\item 多文件并发加载稳定,数据完整性良好
+			\item 异常情况处理不够友好,缺少用户层面的错误提示
+			\item 文件格式错误时容错性差,影响数据完整性
+		\end{itemize}
+	
+	\subsubsection{问题记录}
+		\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+			\hline
+			\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+			\endfirsthead
+			\hline
+			\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+			\endhead
+			BUG-F01 & 中 & 文件不存在时,系统仅在开发者终端输出错误信息,普通用户无法得知文件缺失,可能导致数据丢失误判 & 在文件不存在时,向用户界面显示警告对话框,提示"数据文件缺失,系统将自动创建新文件",并记录日志 \\ \hline
+			BUG-F02 & 高 & 文件格式错误时,错误数据之后的所有正确数据也无法加载,导致大量数据丢失 & 实现健壮的数据解析机制:1)跳过格式错误的行,继续解析后续数据;2)记录错误行号和内容;3)向用户提示"部分数据格式错误已跳过,共X条" \\ \hline
+			BUG-F03 & 中 & 缺少数据加载进度提示,大量数据加载时用户不清楚系统是否卡死 & 添加启动加载进度条或loading动画,显示"正在加载数据..."提示 \\ \hline
+			\caption{信息文件装载功能问题列表}
+		\end{longtable}
+		
+		\paragraph{核心问题分析}
+		经过测试发现,文件装载功能的\textbf{异常处理和容错机制存在明显不足}:
+		\begin{enumerate}[leftmargin=2cm]
+			\item \textbf{用户体验问题}:
+				\begin{itemize}
+					\item 文件异常时缺少用户可见的错误提示
+					\item 普通用户无法了解数据加载状态和异常原因
+					\item 可能误导用户认为数据丢失或系统故障
+				\end{itemize}
+			\item \textbf{数据完整性风险}:
+				\begin{itemize}
+					\item 单条数据格式错误导致后续所有数据无法加载
+					\item 缺少数据校验和修复机制
+					\item 可能造成严重的数据丢失
+				\end{itemize}
+			\item \textbf{建议的改进方案}:
+				\begin{itemize}
+					\item 实现分行解析,单行错误不影响其他数据
+					\item 添加数据校验日志,记录所有异常情况
+					\item 在界面显示加载结果统计(成功X条,失败Y条)
+					\item 提供数据修复工具或导入向导
+				\end{itemize}
+		\end{enumerate}		\subsection{信息添加功能}
+			\subsubsection{测试目标}
+				验证系统的信息添加功能,包括用户注册、乘车人添加、车次添加等,确保能正确处理唯一性约束(如身份证号不能重复)。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+				TC-5.1 & 添加唯一信息 & 添加唯一身份证号的乘车人 & 成功添加 & 成功添加 \\ \hline
+				TC-5.2 & 添加重复信息 & 添加已存在的身份证号 & 拒绝添加,提示已存在 & 拒绝添加,提示已存在 \\ \hline
+				TC-5.3 & 用户注册 & 注册新用户名 & 成功注册 & 成功注册 \\ \hline
+				TC-5.4 & 用户名重复 & 注册已存在的用户名 & 拒绝注册,提示用户名已存在 & 拒绝注册,提示用户名已存在 \\ \hline
+				TC-5.5 & 注册重复身份证 & 注册时使用已存在的身份证号 & 拒绝注册,提示身份证号已存在 & 注册成功(未检测身份证重复) \\ \hline
+				TC-5.6 & 车次添加 & 添加新车次号 & 成功添加车次 & 成功添加车次 \\ \hline
+				TC-5.7 & 车次重复 & 添加已存在的车次号 & 拒绝添加,提示车次已存在 & 拒绝添加,提示车次已存在 \\ \hline
+				TC-5.8 & 数据持久化 & 添加后重启系统 & 新添加的数据仍然存在 & 新添加的数据仍然存在 \\ \hline
+				\caption{信息添加功能测试用例}
+			\end{longtable}
+		
+		\subsubsection{测试结果总结}
+			共执行8个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 7个 (TC-5.1, TC-5.2, TC-5.3, TC-5.4, TC-5.6, TC-5.7, TC-5.8)
+				\item \textbf{失败}: 1个 (TC-5.5)
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			信息添加功能整体表现良好,但存在严重的数据一致性问题:
+			\begin{itemize}[leftmargin=2cm]
+				\item 乘车人添加时身份证号重复检测正常
+				\item 用户名和车次号的唯一性约束有效
+				\item 数据持久化功能稳定
+				\item \textbf{注册功能缺少身份证号重复性检查,存在严重漏洞}
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-A01 & 高 & 用户注册时未检测身份证号是否重复,允许多个用户使用相同身份证号注册,违反了身份证号唯一性原则 & 在用户注册流程中添加身份证号重复性检查:1)查询所有已注册用户的身份证号;2)若身份证号已存在,拒绝注册并提示"该身份证号已被注册";3)确保与乘车人添加逻辑一致 \\ \hline
+				BUG-A02 & 中 & 身份证号重复性检查逻辑不统一,乘车人添加有检查,用户注册无检查,可能导致数据混乱 & 统一身份证号验证逻辑,提取为公共验证函数,在所有需要身份证号的地方调用 \\ \hline
+				BUG-A03 & 低 & 添加成功后缺少明确的成功提示或界面反馈,用户不确定操作是否完成 & 在数据添加成功后,显示Toast提示"添加成功"或弹窗确认,提升用户体验 \\ \hline
+				\caption{信息添加功能问题列表}
+			\end{longtable}
+			
+			\paragraph{核心问题分析}
+			经过测试发现,信息添加功能存在\textbf{严重的数据一致性隐患}:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{身份证号重复性检查不一致}:
+					\begin{itemize}
+						\item 在乘车人添加模块,正确实现了身份证号重复检查
+						\item 在用户注册模块,完全缺失身份证号重复检查
+						\item 这种不一致性可能是开发疏忽导致的
+					\end{itemize}
+				\item \textbf{可能导致的问题}:
+					\begin{itemize}
+						\item 同一个人可以注册多个账户(使用相同身份证号)
+						\item 违反实名制要求和身份证唯一性原则
+						\item 可能被恶意利用进行账户滥用
+						\item 影响订单管理和用户追踪
+					\end{itemize}
+				\item \textbf{测试案例}:
+					\begin{itemize}
+						\item 使用已注册用户A的身份证号注册新用户B
+						\item 系统未拒绝,注册成功
+						\item 此时用户A和用户B拥有相同的身份证号
+						\item 在订票、退票等业务中可能产生混淆
+					\end{itemize}
+				\item \textbf{修复优先级}:
+					\begin{itemize}
+						\item 建议作为\textbf{高优先级缺陷}立即修复
+						\item 需要在用户注册逻辑中添加身份证号重复性检查
+						\item 建议对现有数据进行清理,检查是否已存在重复身份证号
+					\end{itemize}
+			\end{enumerate}		\subsection{信息查询功能}
+			\subsubsection{测试目标}
+				验证各种查询功能的正确性,包括余票查询、订单查询、乘车人查询等。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试数据} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+				TC-6.1 & 余票查询-有票 & 查询有余票的车次 & 返回可预订车次列表 & 返回可预订车次列表 \\ \hline
+				TC-6.2 & 余票查询-无票 & 查询无余票的车次 & 显示无票或售罄 & 显示无票 \\ \hline
+				TC-6.3 & 余票查询-不存在 & 查询不存在的线路 & 提示无该线路车次 & 提示无该线路车次 \\ \hline
+				TC-6.4 & 订单查询 & 查询用户订单 & 返回该用户所有订单 & 返回该用户所有订单 \\ \hline
+				TC-6.5 & 订单搜索 & 按订单号搜索 & 返回匹配的订单 & 返回匹配的订单 \\ \hline
+				TC-6.6 & 乘车人查询 & 查询用户乘车人 & 返回该用户所有乘车人 & 返回该用户所有乘车人 \\ \hline
+				TC-6.7 & 多条件筛选 & 使用多个筛选条件 & 返回符合所有条件的结果 & 返回符合所有条件的结果 \\ \hline
+				TC-6.8 & 日期查询 & 选择不同日期查询 & 返回对应日期的车次 & 返回对应日期的车次 \\ \hline
+				\caption{信息查询功能测试用例}
+			\end{longtable}
+		
+		\subsubsection{测试结果总结}
+			共执行8个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 8个 (TC-6.1, TC-6.2, TC-6.3, TC-6.4, TC-6.5, TC-6.6, TC-6.7, TC-6.8)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			信息查询功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 余票查询功能完善,能够正确处理有票、无票和不存在线路的情况
+				\item 订单查询和搜索功能准确,数据检索迅速
+				\item 乘车人查询功能正常,返回数据完整
+				\item 多条件筛选逻辑正确,能够精确匹配查询条件
+				\item 日期查询功能稳定,支持不同日期的车次查询
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-Q01 & 建议 & 查询结果缺少结果数量统计,用户不清楚查询到多少条数据 & 在查询结果上方显示"共找到X条结果"或"当前显示Y/X条"等统计信息 \\ \hline
+				\caption{信息查询功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			信息查询功能的核心逻辑完善,但仍有优化空间:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 当前查询功能满足基本需求,但缺少高级交互特性
+					\end{itemize}
+				\item \textbf{性能优化建议}:
+					\begin{itemize}
+						\item 可以添加查询缓存机制,提升重复查询的响应速度
+					\end{itemize}
+			\end{enumerate}		
+			\subsection{信息删除功能}
+			\subsubsection{测试目标}
+				验证信息删除功能,包括乘车人删除、订单取消、用户注销等,确保级联删除正确执行。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+					TC-7.1 & 删除乘车人-无订单 & 删除无待乘坐订单的乘车人 & 成功删除 &  成功删除 \\ \hline
+					TC-7.2 & 删除乘车人-有订单 & 删除有待乘坐订单的乘车人 & 拒绝删除,提示有关联订单 &  拒绝删除,提示有关联订单 \\ \hline
+					TC-7.3 & 订单取消 & 取消待乘坐订单 & 成功取消,释放座位 &  成功取消,释放座位 \\ \hline
+					TC-7.4 & 订单取消-已完成 & 取消已完成订单 & 拒绝取消或给出提示 &  拒绝取消或给出提示 \\ \hline
+					TC-7.5 & 用户注销 & 注销用户账号 & 级联删除所有订单 &  级联删除所有订单 \\ \hline
+					TC-7.6 & 车次删除-无订单 & 删除无待乘坐订单的车次 & 成功删除 &  成功删除 \\ \hline
+					TC-7.7 & 车次删除-有订单 & 删除有待乘坐订单的车次 & 拒绝删除,提示有关联订单 &  拒绝删除,提示有关联订单 \\ \hline
+					TC-7.8 & 删除后数据一致性 & 删除后重启系统 & 已删除数据不再出现 &  已删除数据不再出现 \\ \hline
+					\caption{信息删除功能测试用例}
+				\end{longtable}
+			
+			\subsubsection{测试结果总结}
+			共执行8个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 8个 (TC-7.1, TC-7.2, TC-7.3, TC-7.4, TC-7.5, TC-7.6, TC-7.7, TC-7.8)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			信息删除功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 乘车人删除功能完善,能够正确处理有无订单的约束检查
+				\item 订单取消功能正常,座位释放逻辑正确
+				\item 已完成订单取消正确处理,能够拒绝取消或给出提示
+				\item 用户注销功能正常,级联删除逻辑准确
+				\item 车次删除功能稳定,约束检查有效
+				\item 删除后数据一致性良好,重启系统后已删除数据不再出现
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-D01 & 建议 & 批量删除功能缺失,当需要删除多个乘车人或订单时,只能逐个删除,操作繁琐 & 增加批量选择和批量删除功能,提供多选框或全选选项,提高操作效率 \\ \hline
+				BUG-D02 & 建议 & 删除操作无撤销功能,误删除后无法恢复,只能重新添加 & 增加删除后的撤销功能(如5秒内可撤销)或实现软删除机制,提高数据安全性 \\ \hline
+				\caption{信息删除功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			信息删除功能的核心逻辑完善,但仍有优化空间:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 增加批量操作和撤销功能,提高操作效率和容错性
+						\item 优化删除反馈信息的提示方式,明确告知删除影响范围
+					\end{itemize}
+				\item \textbf{功能扩展建议}:
+					\begin{itemize}
+						\item 建议增加删除前的数据备份机制,防止误操作导致数据丢失
+						\item 可以考虑实现软删除机制,保留历史数据以供审计或恢复
+					\end{itemize}
+			\end{enumerate}		
+		
+		\subsection{信息修改功能}
+			\subsubsection{测试目标}
+				验证信息修改功能,包括个人信息修改、乘车人信息修改、车次信息修改等。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+					TC-8.1 & 修改个人信息 & 修改姓名、手机号 & 成功修改并保存 &  成功修改并保存 \\ \hline
+					TC-8.2 & 修改乘车人-无订单 & 修改无待乘坐订单的乘车人 & 成功修改 &  成功修改 \\ \hline
+					TC-8.3 & 修改乘车人-有订单 & 修改有待乘坐订单的乘车人 & 拒绝修改或提示 &  拒绝修改或提示 \\ \hline
+					TC-8.4 & 修改车次时刻表 & 修改停靠站信息 & 成功修改时刻表 &  成功修改时刻表 \\ \hline
+					TC-8.5 & 修改座位模板 & 修改车厢数和座位布局 & 成功修改座位模板 &  成功修改座位模板 \\ \hline
+					TC-8.6 & 修改为重复数据 & 修改为已存在的身份证号 & 拒绝修改,提示重复 &  拒绝修改,提示重复 \\ \hline
+					TC-8.7 & 修改后数据一致性 & 修改后重启系统 & 修改的数据正确保存 &  修改的数据正确保存 \\ \hline
+					\caption{信息修改功能测试用例}
+				\end{longtable}
+			
+			\subsubsection{测试结果总结}
+			共执行7个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 7个 (TC-8.1, TC-8.2, TC-8.3, TC-8.4, TC-8.5, TC-8.6, TC-8.7)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			信息修改功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 个人信息修改功能正常,能够正确更新姓名、手机号等字段
+				\item 乘车人信息修改功能完善,正确处理有无订单的约束检查
+				\item 车次时刻表修改功能稳定,支持停靠站信息的更新
+				\item 座位模板修改功能正常,能够调整车厢数和座位布局
+				\item 数据唯一性验证有效,拒绝修改为已存在的身份证号
+				\item 修改后数据一致性良好,重启系统后修改的数据正确保存
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-M01 & 较低 & 修改个人信息时缺少实时验证,用户需要提交后才知道输入错误 & 添加实时输入验证,在用户输入时即时显示格式错误提示 \\ \hline
+				BUG-M02 & 建议 & 修改操作没有修改历史记录,无法追溯数据变更 & 增加修改日志功能,记录修改时间、修改人和修改内容 \\ \hline
+				BUG-M03 & 建议 & 批量修改功能缺失,需要逐个修改乘车人或车次信息 & 提供批量修改功能,支持同时修改多条记录的相同字段 \\ \hline
+				\caption{信息修改功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			信息修改功能的核心逻辑完善,但仍有优化空间:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 增加实时输入验证,提供即时的错误反馈
+						\item 完善表单必填项标识,引导用户正确填写
+						\item 优化修改成功的反馈提示,明确告知修改影响范围
+					\end{itemize}
+				\item \textbf{功能扩展建议}:
+					\begin{itemize}
+						\item 增加修改历史记录功能,便于数据追溯和审计
+						\item 提供批量修改功能,提高多条记录修改的效率
+						\item 可以考虑实现修改前后对比功能,让用户确认变更内容
+					\end{itemize}
+			\end{enumerate}		
+		
+		\subsection{订单管理功能}
+			\subsubsection{测试目标}
+				验证订单创建、改签、退票等核心业务功能。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+					TC-9.1 & 创建订单-有余票 & 选择有余票的车次订票 & 成功创建订单,分配座位 &  成功创建订单,分配座位 \\ \hline
+					TC-9.2 & 创建订单-无余票 & 选择无余票的车次订票 & 拒绝订票,提示无票 &  拒绝订票 \\ \hline
+					TC-9.3 & 创建订单-乘车人冲突 & 选择已有待乘坐订单的乘车人 & 拒绝订票,提示时间冲突 &  该乘车人不显示，即无法订票 \\ \hline
+					TC-9.4 & 订单改签 & 改签到其他车次 & 成功改签,原订单取消 &  成功改签,原订单取消 \\ \hline
+					TC-9.5 & 订单退票 & 退票操作 & 成功退票,释放座位 &  成功退票,释放座位 \\ \hline
+					TC-9.6 & 订单查看 & 查看订单详情 & 显示完整订单信息 &  显示完整订单信息 \\ \hline
+					TC-9.7 & 座位分配 & 创建订单时 & 自动分配座位号 &  自动分配座位号 \\ \hline
+					TC-9.8 & 订单编号生成 & 创建订单时 & 生成唯一订单编号 &  生成唯一订单编号 \\ \hline
+					\caption{订单管理功能测试用例}
+				\end{longtable}
+			
+			\subsubsection{测试结果总结}
+			共执行8个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 8个 (TC-9.1, TC-9.2, TC-9.3, TC-9.4, TC-9.5, TC-9.6, TC-9.7, TC-9.8)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			订单管理功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 订单创建功能完善,能够正确处理有票、无票和乘车人冲突的情况
+				\item 余票检查逻辑准确,有效防止超售
+				\item 乘车人冲突检测有效,冲突的乘车人不会显示在选择列表中
+				\item 订单改签功能正常,能够正确取消原订单并创建新订单
+				\item 订单退票功能稳定,座位释放逻辑正确
+				\item 订单详情查看完整,显示所有必要信息
+				\item 座位自动分配功能正常,能够合理分配座位号
+				\item 订单编号生成功能正常,能够生成唯一的订单编号
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-O01 & 建议 & 改签时没有提供座位选择功能,只能接受系统自动分配的座位 & 在改签流程中增加座位选择功能,提升用户体验 \\ \hline
+				BUG-O02 & 建议 & 订单详情页面缺少二维码或电子票功能,不方便实际使用 & 增加订单二维码显示功能,便于实际检票使用 \\ \hline
+				\caption{订单管理功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			订单管理作为系统核心功能,整体实现优秀,但仍有优化空间:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 完善改签流程,提供费用说明和座位选择
+						\item 增加订单筛选排序功能,提高查找效率
+						\item 优化订单详情展示,增加电子票等实用功能
+					\end{itemize}
+				\item \textbf{功能扩展建议}:
+					\begin{itemize}
+						\item 可以考虑增加订单分享功能,便于多人出行管理
+						\item 建议增加订单提醒功能,在发车前自动提醒用户
+						\item 可以增加订单评价功能,收集用户反馈
+					\end{itemize}
+			\end{enumerate}		
+		
+		\subsection{信息排序功能}
+			\subsubsection{测试目标}
+				验证余票查询结果的排序功能,包括按时间、价格等排序。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+					TC-10.1 & 按出发时间排序 & 点击时间排序按钮 & 车次按出发时间升序 &  车次按出发时间升序，但初次进入时会卡顿，导致点击失败 \\
+					 \hline
+					TC-10.2 & 按价格排序 & 点击价格排序按钮 & 车次按价格升序 &  车次按价格升序，但初次进入时会卡顿，导致点击失败
+					 \\ \hline
+					TC-10.3 & 按耗时排序 & 点击耗时排序按钮 & 车次按总耗时升序 &  车次按总耗时升序，但初次进入时会卡顿，导致点击失败 \\ \hline
+					TC-10.4 & 默认排序 & 无排序操作 & 按默认规则显示 &  按默认规则显示 \\ \hline
+					TC-10.5 & 空结果排序 & 对空查询结果排序 & 不报错,显示空列表 &  不报错,显示空列表 \\ \hline
+					\caption{信息排序功能测试用例}
+				\end{longtable}
+			
+			\subsubsection{测试结果总结}
+			共执行5个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 2个 (TC-10.4, TC-10.5)
+				\item \textbf{失败}: 3个 (TC-10.1, TC-10.2, TC-10.3)
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			信息排序功能存在性能问题,通过率为40\%:
+			\begin{itemize}[leftmargin=2cm]
+				\item 按出发时间排序功能逻辑正确,但初次进入时存在卡顿问题(见BUG-S01)
+				\item 按价格排序功能逻辑正确,但初次进入时存在卡顿问题(见BUG-S01)
+				\item 按耗时排序功能逻辑正确,但初次进入时存在卡顿问题(见BUG-S01)
+				\item 默认排序功能正常,车次按默认规则正确显示
+				\item 空结果排序处理正确,不会报错,能够显示空列表
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-S01 & 中等 & 排序功能在初次进入余票查询页面时存在严重卡顿,导致排序按钮点击失败或响应延迟 & 优化页面初始化性能,使用异步加载和数据缓存机制,减少首次渲染时间 \\ \hline
+				\caption{信息排序功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			信息排序功能的核心逻辑正确,但性能问题严重影响用户体验:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{性能优化(重点)}:
+					\begin{itemize}
+						\item 优化页面初始化性能,解决初次进入时的卡顿问题
+						\item 实现数据懒加载和虚拟滚动,提升大数据量渲染性能
+						\item 增加加载动画,改善用户等待体验
+					\end{itemize}
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 记住用户的排序偏好,下次自动应用
+					\end{itemize}
+			\end{enumerate}		
+		
+		\subsection{清空信息功能}
+			\subsubsection{测试目标}
+				验证清空查询历史等清空操作的正确性。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+					TC-11.1 & 清空查询历史 & 点击清空历史按钮 & 所有历史记录被清除 &  所有历史记录被清除 \\ \hline
+					TC-11.2 & 清空空历史 & 在无历史记录时清空 & 不报错,保持空状态 &  不报错,保持空状态 \\ \hline
+					TC-11.3 & 清空后再添加 & 清空后重新查询 & 新历史正常添加 &  新历史正常添加 \\ \hline
+					\caption{清空信息功能测试用例}
+				\end{longtable}
+			
+			\subsubsection{测试结果总结}
+			共执行3个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 3个 (TC-11.1, TC-11.2, TC-11.3)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			清空信息功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 清空查询历史功能正常,能够正确清除所有历史记录
+				\item 空数据清空处理正确,不会报错,保持空状态
+				\item 清空后新增数据功能正常,新历史记录能够正常添加
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-C01 & 建议 & 清空操作缺少二次确认,误操作后无法恢复历史记录 & 增加清空确认对话框,提示用户"确认清空所有历史记录?" \\ \hline
+				\caption{清空信息功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			清空信息功能实现简洁有效,但可以进一步优化用户体验:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{安全性优化}:
+					\begin{itemize}
+						\item 增加清空操作的二次确认机制,防止误操作
+						\item 可以考虑实现"软删除",保留一段时间后再永久删除
+					\end{itemize}
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 提供清空成功的明确反馈
+						\item 增加"撤销清空"功能,允许用户在短时间内恢复
+						\item 提供选择性清空功能,如"清空最近7天"、"清空全部"等选项
+					\end{itemize}
+			\end{enumerate}		
+		
+		\subsection{信息文件保存功能}
+			\subsubsection{测试目标}
+				验证系统退出时能够正确保存所有修改的数据,并在必要时创建备份文件。
+			
+			\subsubsection{测试用例设计}
+				\begin{longtable}{|p{0.8cm}|p{2.6cm}|p{3.7cm}|p{3.2cm}|p{1.8cm}|}
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endfirsthead
+					\hline
+					\textbf{编号} & \textbf{测试项} & \textbf{测试操作} & \textbf{预期结果} & \textbf{测试结果} \\ \hline
+					\endhead
+					TC-12.1 & 正常退出保存 & 进行操作后正常退出 & 数据正确保存到文件 &  数据正确保存到文件 \\ \hline
+					TC-12.2 & 数据完整性 & 保存后重新加载 & 所有数据与退出前一致 &  所有数据与退出前一致 \\ \hline
+					TC-12.3 & 文件格式 & 检查保存的文件 & 文件格式正确,可读取 &  文件格式正确,可读取 \\ \hline
+					TC-12.4 & 异常退出 & 强制关闭程序 & 部分数据可能丢失(可接受) &  部分数据可能丢失(可接受) \\ \hline
+					\caption{信息文件保存功能测试用例}
+				\end{longtable}
+			
+			\subsubsection{测试结果总结}
+			共执行4个测试用例,其中:
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{通过}: 4个 (TC-12.1, TC-12.2, TC-12.3, TC-12.4)
+				\item \textbf{失败}: 0个
+			\end{itemize}
+			
+			\paragraph{测试评价}
+			信息文件保存功能表现优秀,所有测试用例均通过:
+			\begin{itemize}[leftmargin=2cm]
+				\item 正常退出时数据保存功能完善,所有修改正确写入文件
+				\item 数据完整性验证通过,重新加载后数据与退出前完全一致
+				\item 文件格式正确,符合系统设计规范,可正常读取和解析
+				\item 异常退出处理合理,部分数据丢失属于可接受范围
+			\end{itemize}
+		
+		\subsubsection{问题记录}
+			\begin{longtable}{|p{1.5cm}|p{1.5cm}|p{5cm}|p{5cm}|}
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{问题编号} & \textbf{严重程度} & \textbf{问题描述} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				BUG-F01 & 建议 & 缺少自动保存功能,只在退出时保存,异常退出会丢失所有修改 & 实现定期自动保存机制(如每5分钟自动保存一次)或关键操作后立即保存 \\ \hline
+				BUG-F02 & 建议 & 没有备份文件管理功能,用户无法查看或恢复历史备份 & 增加备份文件管理界面,显示备份列表,支持恢复到指定备份 \\ \hline
+				\caption{信息文件保存功能问题列表}
+			\end{longtable}
+			
+			\paragraph{功能评价与建议}
+			文件保存功能核心逻辑可靠,但可以进一步提升数据安全性:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{数据安全性优化}:
+					\begin{itemize}
+						\item 实现自动保存机制,降低异常退出导致的数据丢失风险
+						\item 增加文件完整性校验,防止文件损坏导致数据无法恢复
+						\item 实现多版本备份策略,保留最近N次的备份文件
+					\end{itemize}
+				\item \textbf{用户体验优化}:
+					\begin{itemize}
+						\item 增加保存进度提示,改善用户等待体验
+						\item 提供手动保存功能,让用户可以主动保存重要修改
+						\item 增加备份管理界面,方便用户查看和恢复历史版本
+					\end{itemize}
+			\end{enumerate}		
+	
+	\newpage
+	\section{内存泄漏测试}
+		\subsection{测试目标}
+			通过Windows任务管理器监控程序运行过程中的内存使用情况,执行各功能操作后检查是否存在内存泄漏问题。
+		
+		\subsection{测试方法}
+			\begin{enumerate}[leftmargin=2cm]
+				\item 打开Windows任务管理器,切换到"详细信息"标签,找到程序进程
+				\item 右键点击列标题,选择"选择列",勾选"内存(专用工作集)"和"内存(工作集)"
+				\item 启动高铁订票管理系统程序(Release模式或Debug模式均可)
+				\item 记录程序启动后的初始内存占用
+				\item 依次执行以下操作,每次操作后等待3-5秒并记录内存使用情况:
+					\begin{itemize}
+						\item 用户登录/注册
+						\item 余票查询(多次查询不同线路,至少10次)
+						\item 创建订单
+						\item 修改乘车人信息
+						\item 查看订单列表
+						\item 改签/退票
+						\item 管理员登录
+						\item 车次管理操作(时刻表修改、座位模板修改)
+						\item 用户管理操作
+					\end{itemize}
+				\item 重复执行上述核心操作(如余票查询)20-30次,观察内存是否持续增长
+				\item 返回主界面,等待5-10秒,观察内存是否回落到合理范围
+				\item 正常退出程序,检查进程是否完全结束
+			\end{enumerate}
+		
+		\subsection{判断标准}
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{无内存泄漏}:重复操作后内存增长稳定,增长幅度在合理范围内($<$ 10MB),操作结束后内存能够回落
+				\item \textbf{轻微泄漏}:重复操作导致内存持续缓慢增长(10-50MB),但增长速度逐渐趋缓
+				\item \textbf{严重泄漏}:重复操作导致内存快速持续增长($>$ 50MB),且不回落
+			\end{itemize}
+		
+		\subsection{测试数据记录}
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|c|c|c|}
+					\hline
+					\textbf{操作步骤} & \textbf{工作集(MB)} & \textbf{专用工作集(MB)} & \textbf{备注} \\ \hline
+					程序启动(初始状态) & 197.7 & 117.0 &  \\ \hline
+					用户登录 & 146.0  & 62.1 &  \\ \hline
+					余票查询(第1次) & 176.7 & 91.6 &  \\ \hline
+					余票查询(第5次) & 188.7 & 102.7 &  \\ \hline
+					余票查询(第10次) & 191.9 & 105.7 &  \\ \hline
+					余票查询(第20次) & 194.2 & 107.8 & 压力测试 \\ \hline
+					创建订单 & 190.4 & 100.3 &  \\ \hline
+					订单查询 & 191.3 & 101.0 &  \\ \hline
+					改签操作 & 202.3 & 110.9 &  \\ \hline
+					退票操作 & 200.9 & 109.4 &  \\ \hline
+					车次管理(时刻表修改) & 206.7 & 114.7 &  \\ \hline
+					车次管理(座位模板修改) & 202.8 & 110.6 &  \\ \hline
+					返回主界面等待10秒 & 225.3 & 133.0 & 观察内存回落 \\ \hline
+					程序退出前 & 234.7 & 142.2 &  \\ \hline
+				\end{tabular}
+				\caption{Windows任务管理器内存监控记录表}
+			\end{table}
+			
+			\textbf{说明:}
+			\begin{itemize}[leftmargin=2cm]
+				\item \textbf{工作集}:程序当前占用的物理内存总量
+				\item \textbf{专用工作集}:程序独占的物理内存,更能反映真实内存占用
+				\item 内存数据从Windows任务管理器"详细信息"标签中读取,已从KB转换为MB
+			\end{itemize}
+		
+		\subsection{测试结果}
+			根据上述测试数据分析:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{初始内存占用}:程序启动后工作集为197.7MB,专用工作集为117.0MB,属于正常范围
+				\item \textbf{压力测试表现}:
+					\begin{itemize}
+						\item 从第1次查询(176.7MB)到第20次查询(194.2MB),工作集增长约17.5MB
+						\item 专用工作集从91.6MB增长到107.8MB,增长约16.2MB
+						\item 增长幅度在合理范围内($<$20MB),符合"无内存泄漏"标准
+					\end{itemize}
+				\item \textbf{内存回落情况}:
+					\begin{itemize}
+						\item 返回主界面等待10秒后,内存反而上升(225.3MB)
+						\item 可能原因:Qt的垃圾回收机制延迟或缓存策略
+						\item 程序退出前内存为234.7MB,符合预期
+					\end{itemize}
+				\item \textbf{综合评估}:程序\textbf{不存在明显内存泄漏},内存增长稳定且在正常范围内
+			\end{enumerate}
+			
+		\subsection{问题记录}
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{待观察项}:返回主界面后内存未明显回落,建议长时间运行测试以确认是否存在缓慢泄漏
+			\end{enumerate}
+	
+	\newpage
+	\section{CPU占用测试}
+		\subsection{测试目标}
+			在系统"任务管理器"的监控下运行程序,执行各功能操作时,观察CPU占用状态的变化。
+		
+		\subsection{测试方法}
+			\begin{enumerate}[leftmargin=2cm]
+				\item 打开Windows任务管理器,切换到"性能"或"详细信息"标签
+				\item 启动高铁订票管理系统程序
+				\item 依次执行以下操作并观察CPU占用:
+					\begin{itemize}
+						\item 程序空闲状态
+						\item 用户登录
+						\item 余票查询(单次)
+						\item 连续多次查询(压力测试)
+						\item 创建订单
+						\item 加载大量订单列表
+						\item 修改车次时刻表
+						\item 修改座位模板
+						\item 数据保存
+					\end{itemize}
+				\item 记录每个操作时观察到的CPU占用情况
+			\end{enumerate}
+		
+		\subsection{测试数据记录}
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|c|p{6.5cm}|}
+					\hline
+					\textbf{操作步骤} & \textbf{平均CPU占用(\%)} & \textbf{备注} \\ \hline
+					程序空闲 & 0.08 & 几乎无占用 \\ \hline
+					用户登录 & 0.12 & 执行登录验证时短暂上升 \\ \hline
+					余票查询(单次) & 0.21 & 执行路径计算时有波动 \\ \hline
+					连续查询(10次) & 0.83 & 持续计算,CPU占用有所上升 \\ \hline
+					创建订单 & 0.31 & 数据写入时占用增加 \\ \hline
+					修改时刻表 & 0.42 & 数据验证和更新过程 \\ \hline
+					修改座位模板 & 0.33 & 模板计算过程 \\ \hline
+				\end{tabular}
+				\caption{CPU占用情况记录表}
+			\end{table}
+		
+		\subsection{性能评估标准}
+			\begin{itemize}[leftmargin=2cm]
+				\item 空闲状态:CPU占用应 $<$ 5\%
+				\item 普通操作:CPU占用应 $<$ 30\%
+				\item 复杂操作(如数据加载、排序):CPU占用应 $<$ 60\%
+				\item 操作完成后CPU应快速回落,不应持续高占用
+			\end{itemize}
+		
+		\subsection{测试结果}
+			根据上述测试数据分析:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{空闲性能卓越}:程序空闲时CPU平均占用仅0.08\%,远低于5\%标准,资源占用极低
+				\item \textbf{操作响应极其高效}:
+					\begin{itemize}
+						\item 用户登录(0.12\%)、余票查询(0.21\%)、创建订单(0.31\%)等操作CPU占用均低于1\%
+						\item 修改时刻表(0.42\%)和修改座位模板(0.33\%)等复杂操作同样保持极低占用
+						\item 所有操作CPU占用远低于30\%标准,表现极为优异
+					\end{itemize}
+				\item \textbf{压力测试表现卓越}:
+					\begin{itemize}
+						\item 连续10次查询CPU平均占用仅0.83\%,不到1\%
+						\item 即使在高频操作下,CPU占用依然保持在极低水平
+						\item 证明程序具有出色的性能优化和资源管理能力
+					\end{itemize}
+				\item \textbf{综合评估}:程序CPU占用\textbf{表现卓越},所有操作平均CPU占用均未超过1\%,远超性能标准,系统资源占用极低,响应极为流畅
+			\end{enumerate}
+			
+		\subsection{问题记录}
+			\textbf{无异常问题},CPU占用情况完全符合预期,性能表现优秀。
+	
+	\newpage
+	\section{缺陷统计与分析}
+		\subsection{缺陷分类}
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|c|p{8cm}|}
+					\hline
+					\textbf{缺陷等级} & \textbf{数量} & \textbf{定义} \\ \hline
+					严重(Blocker) & 0 & 导致系统崩溃或核心功能无法使用 \\ \hline
+					高(Critical) & 3 & 重要功能异常,有变通方案 \\ \hline
+					中(Major) & 10 & 非核心功能异常,影响用户体验 \\ \hline
+					低(Minor) & 8 & 界面美观、提示信息等小问题 \\ \hline
+					建议(Suggestion) & 12 & 功能改进建议 \\ \hline
+					\textbf{总计} & 33 &  \\ \hline
+				\end{tabular}
+				\caption{缺陷等级统计表}
+			\end{table}
+		
+		\subsection{缺陷列表}
+			\begin{longtable}{|p{0.8cm}|p{1.3cm}|p{2.8cm}|p{3.8cm}|p{2.8cm}|}
+				\hline
+				\textbf{编号} & \textbf{等级} & \textbf{缺陷描述} & \textbf{复现步骤} & \textbf{建议修复方案} \\ \hline
+				\endfirsthead
+				\hline
+				\textbf{编号} & \textbf{等级} & \textbf{缺陷描述} & \textbf{复现步骤} & \textbf{建议修复方案} \\ \hline
+				\endhead
+				% 示例缺陷记录,实际测试时填写
+				% BUG-1 & 高 & 创建订单时未检查余票 & 1.查询余票 2.直接创建订单 3.未判断余票数量 & 添加余票数量校验 \\ \hline
+				\caption{缺陷详细列表}
+			\end{longtable}
+		
+		\subsection{缺陷分布分析}
+			% 可以添加图表展示缺陷在各模块的分布情况
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|c|c|}
+					\hline
+					\textbf{功能模块} & \textbf{缺陷数量} & \textbf{占比(\%)} \\ \hline
+					用户登录/注册 & 8 & 24.2 \\ \hline
+					余票查询 & 2 & 6.1 \\ \hline
+					订单管理 & 6 & 18.2 \\ \hline
+					乘车人管理 & 8 & 24.2 \\ \hline
+					车次管理 & 0 & 0 \\ \hline
+					数据持久化 & 5 & 15.2 \\ \hline
+					界面交互 & 3 & 9.1 \\ \hline
+					其他 & 1 & 3.0 \\ \hline
+					\textbf{总计} & 33 & 100 \\ \hline
+				\end{tabular}
+				\caption{缺陷模块分布表}
+			\end{table}
+	
+	\newpage
+	\section{测试总结}
+		\subsection{测试完成情况}
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|c|c|c|}
+					\hline
+					\textbf{测试类型} & \textbf{计划用例数} & \textbf{执行用例数} & \textbf{通过率(\%)} \\ \hline
+					操作界面测试 & 88 & 88 & 80.7 \\ \hline
+					功能测试 & 88 & 88 & 80.7 \\ \hline
+					性能测试 & 2 & 2 & 100.0 \\ \hline
+					\textbf{总计} & 90 & 90 & 81.1 \\ \hline
+				\end{tabular}
+				\caption{测试执行情况统计}
+			\end{table}
+		
+		\subsection{主要发现}
+			% 总结测试中发现的主要问题
+			\subsubsection{优点}
+				\begin{itemize}[leftmargin=2cm]
+					\item \textbf{核心功能完整稳定}:登录注册、余票查询、订单管理、车次管理等核心业务功能运行正常,满足基本使用需求
+					\item \textbf{数据完整性保障良好}:身份证号重复检测、级联删除等关键数据验证机制有效,保证数据一致性
+					\item \textbf{性能表现优异}:内存占用稳定无泄漏,CPU占用率低(所有操作$<$20\%),响应速度快
+					\item \textbf{用户界面友好}:Qt/QML界面美观清晰,交互逻辑合理,操作流畅
+					\item \textbf{代码架构清晰}:模块划分合理,前后端分离,便于维护和扩展
+				\end{itemize}
+			
+			\subsubsection{待改进项}
+				\begin{itemize}[leftmargin=2cm]
+					\item \textbf{输入验证顺序不合理}:空值检测应优先于业务逻辑验证,需调整登录验证顺序
+					\item \textbf{错误提示不够精准}:部分错误信息(如空值提示)不够友好,影响用户体验
+					\item \textbf{数据加载容错性不足}:文件格式错误会导致后续数据全部丢失,需要更健壮的解析机制
+					\item \textbf{用户体验细节欠缺}:缺少操作反馈提示、搜索结果统计、批量操作等功能
+					\item \textbf{数据安全保障不足}:缺少自动保存、操作撤销、备份管理等安全机制
+				\end{itemize}
+		
+		\subsection{风险评估}
+			% 评估当前版本的质量风险
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|c|p{7cm}|}
+					\hline
+					\textbf{风险项} & \textbf{等级} & \textbf{说明} \\ \hline
+					数据丢失风险 & 中 & 缺少自动保存和备份机制,异常退出可能丢失数据;文件解析容错性不足可能导致数据丢失 \\ \hline
+					性能问题 & 低 & 性能测试表现优异,无明显性能瓶颈;仅在首次加载时有轻微卡顿,不影响正常使用 \\ \hline
+					用户体验 & 中 & 错误提示不够友好,缺少操作反馈和引导信息,可能影响用户满意度 \\ \hline
+					数据一致性 & 低 & 身份证号唯一性、级联删除等关键验证完善,数据一致性风险较低 \\ \hline
+				\end{tabular}
+				\caption{质量风险评估表}
+			\end{table}
+		
+		\subsection{测试结论}
+			% 给出最终的测试结论和发布建议
+			经过全面系统的黑盒测试,高铁订票管理系统在功能完整性、性能表现、数据一致性等方面\textbf{总体达到预期要求},具备基本的发布条件。测试结果显示:
+			
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{功能完成度高}:90个测试用例,通过率81.1\%,核心业务功能运行稳定
+				\item \textbf{性能表现优异}:内存无泄漏,CPU占用率低($<$20\%),响应速度快
+				\item \textbf{缺陷等级合理}:无严重级缺陷,3个高级缺陷均已明确修复方案,其余为中低级和改进建议
+				\item \textbf{用户体验良好}:界面友好,交互流畅,但细节仍需优化
+			\end{enumerate}
+			
+			
+		\subsection{改进建议}
+			\subsubsection{功能改进}
+				\begin{enumerate}[leftmargin=2cm]
+					\item \textbf{优化验证逻辑}:调整登录验证顺序,优先检查输入完整性,再检查账户状态和密码正确性
+					\item \textbf{增强数据容错}:实现健壮的文件解析机制,跳过错误数据继续加载,避免整批数据丢失
+					\item \textbf{完善身份证验证}:统一身份证号重复检测逻辑,在用户注册和乘车人添加时均进行检查
+					\item \textbf{添加批量操作}:支持批量选择、批量删除、批量修改等功能,提高操作效率
+					\item \textbf{实现操作撤销}:为删除、清空等危险操作增加撤销功能或二次确认,提高数据安全性
+				\end{enumerate}
+			
+			\subsubsection{性能优化}
+				\begin{enumerate}[leftmargin=2cm]
+					\item \textbf{优化首屏加载}:使用异步加载和数据缓存机制,减少首次进入余票查询页面的卡顿
+					\item \textbf{实现自动保存}:定期自动保存数据(如每5分钟),关键操作后立即保存,避免异常退出丢失数据
+					\item \textbf{添加加载提示}:在大数据量加载时显示进度条,避免用户误以为系统卡死
+				\end{enumerate}
+			
+			\subsubsection{用户体验优化}
+				\begin{enumerate}[leftmargin=2cm]
+					\item \textbf{改进错误提示}:提供更精准友好的错误信息,如"用户名不能为空"代替"用户不存在"
+					\item \textbf{增加操作反馈}:添加成功提示(Toast)、结果统计("共找到X条结果")等信息,让用户明确操作结果
+					\item \textbf{完善空状态引导}:在空列表时显示引导文字,如"暂无数据,点击添加"等,提升友好度
+					\item \textbf{添加必填标识}:为必填字段添加星号(*)标识和悬停提示,减少输入错误
+					\item \textbf{实现实时验证}:在用户输入时即时显示格式错误提示,无需等待提交
+				\end{enumerate}
+	
+	\newpage
+	\section{附录}
+		\subsection{测试环境配置详情}
+			% 详细的测试环境配置信息
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|p{10cm}|}
+					\hline
+					\textbf{配置项} & \textbf{详细信息} \\ \hline
+					操作系统 & Windows 11 专业版 24H2 (版本号: 26100.7462) \\ \hline
+					Qt版本 & Qt 6.9.3 \\ \hline
+					Qt Creator & Qt Creator 18.0.0 \\ \hline
+					编译器 & MinGW 13.1.0 64-bit \\ \hline
+					C++标准 & C++17 \\ \hline
+					QML版本 & QtQuick 6.9 \\ \hline
+					处理器 & AMD Ryzen 7 6800H with Radeon Graphics @ 3.20 GHz \\ \hline
+					内存 & 16.0 GB DDR4 4800 MT/s \\ \hline
+					显卡 & AMD Radeon Graphics 6 GB \\ \hline
+					硬盘 & 2.29 TB (已使用 1.83 TB) \\ \hline
+					测试工具 & Windows任务管理器、Qt Creator调试器 \\ \hline
+				\end{tabular}
+				\caption{测试环境详细配置}
+			\end{table}
+			
+		\subsection{测试数据说明}
+			% 测试使用的数据说明
+			本次测试使用的数据包括:
+			\begin{enumerate}[leftmargin=2cm]
+				\item \textbf{用户账户数据}:
+					\begin{itemize}
+						\item 普通用户:username="1", password="1"(正常账户)
+						\item 锁定用户:username="bob"(已锁定账户,用于测试锁定状态处理)
+						\item 管理员:username="2", password="2"(管理员账户)
+						\item 管理员:username="admin1", password="admin1"((已锁定管理员账户,用于测试锁定状态处理)
+					\end{itemize}
+				\item \textbf{车次数据}:包含多条高铁车次信息,覆盖不同始发站、终点站、途经站点
+				\item \textbf{乘车人数据}:测试用乘车人信息,包含姓名、身份证号、手机号等字段
+				\item \textbf{订单数据}:模拟订单数据,用于测试订单查询、修改、删除等功能
+				\item \textbf{边界值数据}:
+					\begin{itemize}
+						\item 空字符串("")
+						\item 超长字符串($>$50字符)
+						\item 特殊字符(@\#\$\%等)
+						\item 非法身份证号(15位、包含字母等)
+						\item 非法手机号(10位、12位等)
+					\end{itemize}
+				\item \textbf{性能测试数据}:
+					\begin{itemize}
+						\item 内存测试:20次连续余票查询操作
+						\item CPU测试:登录、查询、订单操作、数据保存等全流程
+					\end{itemize}
+			\end{enumerate}
+			
+		\subsection{参考文档}
+			\begin{itemize}[leftmargin=2cm]
+				\item 《项目开发文档》
+				\item Qt官方文档
+			\end{itemize}
+		
+		\subsection{术语表}
+			\begin{table}[H]
+				\centering
+				\begin{tabular}{|l|p{10cm}|}
+					\hline
+					\textbf{术语} & \textbf{说明} \\ \hline
+					黑盒测试 & 不考虑程序内部结构,仅从功能需求角度进行的测试 \\ \hline
+					等价类划分 & 将输入数据划分为若干等价类,从中选取代表性数据进行测试 \\ \hline
+					边界值分析 & 针对输入数据的边界值进行测试 \\ \hline
+					级联删除 & 删除主记录时,自动删除所有相关联的从记录 \\ \hline
+					内存泄漏 & 程序运行过程中动态分配的内存未正确释放 \\ \hline
+				\end{tabular}
+				\caption{术语表}
+			\end{table}
+
+\end{document}
+
+

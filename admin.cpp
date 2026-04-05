@@ -3,6 +3,13 @@
 
 Admin::Admin() {}
 
+Admin::Admin(const QString& username, const QString& password, bool locked)
+{
+    this->username = username;
+    this->password = password;
+    this->locked = locked;
+}
+
 QString Admin::getUsername() {
     return username;
 }

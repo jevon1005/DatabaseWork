@@ -1,5 +1,8 @@
 build
 
+# 本地 Supabase / Postgres 调试配置（含密码，勿提交）
+railway_debug_pg.ini
+
 # C++ objects and libs
 *.slo
 *.lo

@@ -10,7 +10,7 @@ private:
     bool locked = false;
 public:
     Admin();
-
+    Admin(const QString& username, const QString& password, bool locked);
     QString getUsername();
     bool setUsername(const QString &username);
     QString getPassword();

@@ -9,14 +9,11 @@ find_package(Qt6 REQUIRED COMPONENTS
     Qml
     Quick
     QuickControls2
+    Sql
+    Core5Compat
 )
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -45,11 +42,12 @@ add_executable(appRailwaySystem
     train.h train.cpp
     trainmanager.h trainmanager.cpp
     passengermanager.h passengermanager.cpp
-
+    railway_pg_codec.h railway_pg_codec.cpp
+    railway_pg_connection.h railway_pg_connection.cpp
 )
 
 target_link_libraries(appRailwaySystem
-    PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2
+    PRIVATE Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Sql Qt6::Core5Compat
 )
 target_link_libraries(appRailwaySystem PRIVATE Qt6::Core)
 target_link_libraries(appRailwaySystem PRIVATE Qt6::Core)

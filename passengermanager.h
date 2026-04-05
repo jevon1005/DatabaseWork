@@ -28,6 +28,9 @@ public:
     // 删除某一用户的所有乘车人（用户注销账号）
     bool deletePassengersByUsername(const QString &username);
 
+    void loadFromPostgres();
+    void saveToPostgres();
+
 private:
     std::vector<Passenger> getPassengersById(const QString &id);
     bool readFromFile(const char filename[]);

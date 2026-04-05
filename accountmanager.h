@@ -18,6 +18,7 @@ public:
 
 public:
     explicit AccountManager(QObject *parent = nullptr);
+    ~AccountManager();
 
     Q_INVOKABLE QVariantMap loginUser_api(const QString &username, const QString &password);
     Q_INVOKABLE QVariantMap loginAdmin_api(const QString &username, const QString &password);
@@ -43,6 +44,9 @@ public:
     std::optional<User> getUserByUsername(const QString &username);
     // 通过用户名获得管理员信息
     std::optional<Admin> getAdminByUsername(const QString &username);
+
+    void loadFromPostgres();
+    void saveToPostgres();
 
 private:
     std::optional<Admin> findAdminByUsername(const QString &username);

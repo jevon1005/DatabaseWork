@@ -155,6 +155,9 @@ bool Timetable::insertPassingStationAtEnd(Station &station, Time &arriveTime, Ti
 }
 
 std::tuple<Station, Time> Timetable::getStartStationInfo() {
+    if (table.empty()) {
+        return std::make_tuple(Station(), Time());
+    }
     Station startStation = std::get<0>(table[0]);
     Time departureTime = std::get<2>(table[0]);
     return std::make_tuple(startStation, departureTime);
@@ -162,6 +165,9 @@ std::tuple<Station, Time> Timetable::getStartStationInfo() {
 
 std::tuple<Station, Time> Timetable::getEndStationInfo() {
     int len = table.size();
+    if (len == 0) {
+        return std::make_tuple(Station(), Time());
+    }
     Station endStation = std::get<0>(table[len-1]);
     Time arriveTime = std::get<1>(table[len-1]);
     return std::make_tuple(endStation, arriveTime);

@@ -7,6 +7,8 @@
 #include <QVariantMap>
 #include <optional>
 
+class TrainManager;
+
 class OrderManager : public QObject
 {
     Q_OBJECT
@@ -15,7 +17,7 @@ private:
     std::vector<Order> orders;
 
 public:
-    explicit OrderManager(QObject *parent = nullptr);
+    explicit OrderManager(TrainManager *trainManager = nullptr, QObject *parent = nullptr);
     ~OrderManager();
 
     Q_INVOKABLE QVariantList getOrdersByUsername_api(const QString &username);
@@ -46,7 +48,11 @@ public:
     // 判断某个车次是否有待乘坐订单
     bool hasUnusedOrderForTrain(const QString &trainNumber);
 
+    void loadFromPostgres();
+    void saveToPostgres();
+
 private:
+    TrainManager *m_trainManager = nullptr;
     std::vector<Order> getOrdersByUsername(const QString &username);
     bool cancelOrder(const QString &orderNumber);
     // 根据当前系统时间，检查订单是否过期，过期的设置为“已乘坐”

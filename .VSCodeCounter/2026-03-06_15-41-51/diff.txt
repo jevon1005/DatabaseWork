@@ -1,0 +1,96 @@
+Date : 2026-03-06 15:41:51
+Directory : d:\study\train\RailwaySystem
+Total : 57 files,  3641 codes, -162 comments, 261 blanks, all 3740 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| qml      |         22 |      1,461 |       -223 |         95 |      1,333 |
+| LaTeX    |          1 |      1,217 |          9 |        112 |      1,338 |
+| C++      |         21 |        486 |         52 |         54 |        592 |
+| CSV      |          2 |        267 |          0 |          0 |        267 |
+| Markdown |          8 |        209 |          0 |          0 |        209 |
+| SVG      |          1 |          1 |          0 |          0 |          1 |
+| JSON     |          2 |          0 |          0 |          0 |          0 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                            | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                               |         57 |      3,641 |       -162 |        261 |      3,740 |
+| . (Files)                                                                       |         21 |        486 |         52 |         54 |        592 |
+| .VSCodeCounter                                                                  |         12 |        476 |          0 |          0 |        476 |
+| .VSCodeCounter\2025-11-20_22-46-21                                              |          5 |       -142 |          0 |        -26 |       -168 |
+| .VSCodeCounter\2025-11-28_23-37-53                                              |          7 |        618 |          0 |         26 |        644 |
+| qml                                                                             |         22 |      1,461 |       -223 |         95 |      1,333 |
+| qml\components                                                                  |          5 |        365 |         30 |         36 |        431 |
+| qml\pages                                                                       |         17 |      1,096 |       -253 |         59 |        902 |
+| softwareTest                                                                    |          1 |      1,217 |          9 |        112 |      1,338 |
+| test                                                                            |          1 |          1 |          0 |          0 |          1 |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                        | language | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\details.md      | Markdown |        -94 |          0 |         -6 |       -100 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\diff-details.md | Markdown |         -9 |          0 |         -6 |        -15 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\diff.md         | Markdown |        -12 |          0 |         -7 |        -19 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\results.json    | JSON     |         -1 |          0 |          0 |         -1 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-20_22-46-21\results.md      | Markdown |        -26 |          0 |         -7 |        -33 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\details.md      | Markdown |         98 |          0 |          6 |        104 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\diff-details.md | Markdown |        183 |          0 |          6 |        189 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\diff.csv        | CSV      |        176 |          0 |          0 |        176 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\diff.md         | Markdown |         41 |          0 |          7 |         48 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\results.csv     | CSV      |         91 |          0 |          0 |         91 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\results.json    | JSON     |          1 |          0 |          0 |          1 |
+| d:\study\train\RailwaySystem\.VSCodeCounter\2025-11-28_23-37-53\results.md      | Markdown |         28 |          0 |          7 |         35 |
+| d:\study\train\RailwaySystem\accountmanager.cpp                                 | C++      |         77 |          4 |         11 |         92 |
+| d:\study\train\RailwaySystem\accountmanager.h                                   | C++      |          6 |          4 |          0 |         10 |
+| d:\study\train\RailwaySystem\bookingsystem.cpp                                  | C++      |        182 |         20 |         19 |        221 |
+| d:\study\train\RailwaySystem\bookingsystem.h                                    | C++      |          5 |          5 |          0 |         10 |
+| d:\study\train\RailwaySystem\city.cpp                                           | C++      |          9 |          0 |          1 |         10 |
+| d:\study\train\RailwaySystem\city.h                                             | C++      |          2 |          0 |          0 |          2 |
+| d:\study\train\RailwaySystem\ordermanager.cpp                                   | C++      |         34 |          0 |          4 |         38 |
+| d:\study\train\RailwaySystem\ordermanager.h                                     | C++      |          4 |          3 |          1 |          8 |
+| d:\study\train\RailwaySystem\passengermanager.cpp                               | C++      |         29 |          3 |          2 |         34 |
+| d:\study\train\RailwaySystem\passengermanager.h                                 | C++      |          1 |          3 |          0 |          4 |
+| d:\study\train\RailwaySystem\qml\components\ConfirmCancelDialog.qml             | qml      |          6 |          2 |          1 |          9 |
+| d:\study\train\RailwaySystem\qml\components\ConfirmDialog.qml                   | qml      |          6 |          2 |          1 |          9 |
+| d:\study\train\RailwaySystem\qml\components\SearchableComboBox.qml              | qml      |        100 |          9 |         21 |        130 |
+| d:\study\train\RailwaySystem\qml\components\SideBar.qml                         | qml      |          9 |          0 |          1 |         10 |
+| d:\study\train\RailwaySystem\qml\components\TimetableView.qml                   | qml      |        244 |         17 |         12 |        273 |
+| d:\study\train\RailwaySystem\qml\pages\AccountManagement.qml                    | qml      |         77 |          8 |          9 |         94 |
+| d:\study\train\RailwaySystem\qml\pages\EditPassengerInfoDialog.qml              | qml      |          6 |          2 |          1 |          9 |
+| d:\study\train\RailwaySystem\qml\pages\EditPassingStationDialog.qml             | qml      |        110 |          0 |         -3 |        107 |
+| d:\study\train\RailwaySystem\qml\pages\EditSeatTemplateDialog.qml               | qml      |        275 |         70 |         46 |        391 |
+| d:\study\train\RailwaySystem\qml\pages\Login.qml                                | qml      |        108 |          6 |          5 |        119 |
+| d:\study\train\RailwaySystem\qml\pages\OrderConfirm.qml                         | qml      |         19 |          2 |          1 |         22 |
+| d:\study\train\RailwaySystem\qml\pages\PassengerInfo.qml                        | qml      |         67 |          2 |          3 |         72 |
+| d:\study\train\RailwaySystem\qml\pages\PersonalInfoDialog.qml                   | qml      |          6 |          2 |          1 |          9 |
+| d:\study\train\RailwaySystem\qml\pages\Profile.qml                              | qml      |         21 |          1 |          0 |         22 |
+| d:\study\train\RailwaySystem\qml\pages\RegisterDialog.qml                       | qml      |         28 |       -392 |        -42 |       -406 |
+| d:\study\train\RailwaySystem\qml\pages\ResetPasswordDialog.qml                  | qml      |         16 |          2 |          1 |         19 |
+| d:\study\train\RailwaySystem\qml\pages\SubmitOrderDialog.qml                    | qml      |          8 |          2 |          2 |         12 |
+| d:\study\train\RailwaySystem\qml\pages\TicketQuery.qml                          | qml      |          0 |         -1 |          1 |          0 |
+| d:\study\train\RailwaySystem\qml\pages\TicketQueryResult.qml                    | qml      |         24 |          8 |          5 |         37 |
+| d:\study\train\RailwaySystem\qml\pages\TimetableManagement.qml                  | qml      |         83 |          8 |         13 |        104 |
+| d:\study\train\RailwaySystem\qml\pages\TrainManagement.qml                      | qml      |        212 |         24 |         17 |        253 |
+| d:\study\train\RailwaySystem\qml\pages\UserManagement.qml                       | qml      |         36 |          3 |         -1 |         38 |
+| d:\study\train\RailwaySystem\softwareTest\测试报告.tex                              | LaTeX    |      1,217 |          9 |        112 |      1,338 |
+| d:\study\train\RailwaySystem\stationmanager.cpp                                 | C++      |         33 |          0 |          3 |         36 |
+| d:\study\train\RailwaySystem\stationmanager.h                                   | C++      |          4 |          1 |          0 |          5 |
+| d:\study\train\RailwaySystem\test\顺序表-解锁.svg                                    | SVG      |          1 |          0 |          0 |          1 |
+| d:\study\train\RailwaySystem\time.cpp                                           | C++      |          6 |          0 |          0 |          6 |
+| d:\study\train\RailwaySystem\timetable.cpp                                      | C++      |         -5 |          0 |          1 |         -4 |
+| d:\study\train\RailwaySystem\timetable.h                                        | C++      |          1 |          1 |          0 |          2 |
+| d:\study\train\RailwaySystem\train.cpp                                          | C++      |         12 |          0 |          3 |         15 |
+| d:\study\train\RailwaySystem\train.h                                            | C++      |          3 |          0 |          0 |          3 |
+| d:\study\train\RailwaySystem\trainmanager.cpp                                   | C++      |         74 |          5 |          8 |         87 |
+| d:\study\train\RailwaySystem\trainmanager.h                                     | C++      |          3 |          3 |          0 |          6 |
+| d:\study\train\RailwaySystem\user.cpp                                           | C++      |          5 |          0 |          1 |          6 |
+| d:\study\train\RailwaySystem\user.h                                             | C++      |          1 |          0 |          0 |          1 |
+| Total                                                                           |          |      3,641 |       -162 |        261 |      3,740 |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

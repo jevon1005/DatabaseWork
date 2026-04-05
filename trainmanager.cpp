@@ -1,16 +1,29 @@
 #include "trainmanager.h"
+#include "railway_pg_connection.h"
+#include "railway_pg_codec.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <QDebug>
 #include <QCoreApplication>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
 
-TrainManager::TrainManager(QObject *parent)
-    : QObject{parent}
-{
-    readFromFile("../../data/train.txt");
-    connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() {
-        this->writeToFile("../../data/train.txt");
-    });
+TrainManager::TrainManager(QObject *parent) : QObject{parent} {
+    if (railwayPgIsOpen()) {
+        loadFromPostgres();
+    }
+    // 💡 自动迁移逻辑
+    if (trains.empty()) {
+        qDebug() << "[列车] 云端为空或解析失败，开始从本地txt加载并重置云端...";
+        readFromFile("../../data/train.txt");
+        if (railwayPgIsOpen()) saveToPostgres();
+    }
+}
+
+TrainManager::~TrainManager() {
+    if (!railwayPgIsOpen()) writeToFile("../../data/train.txt");
 }
 
 QVariantList TrainManager::getTrains_api() {
@@ -18,7 +31,6 @@ QVariantList TrainManager::getTrains_api() {
     for (auto &train : trains) {
         QVariantMap map;
         map["trainNumber"] = train.getNumber();
-
         std::tuple<Station, Time> startStationInfo = train.getTimetable().getStartStationInfo();
         std::tuple<Station, Time> endStationInfo = train.getTimetable().getEndStationInfo();
         Station startStation = std::get<0>(startStationInfo);
@@ -26,17 +38,11 @@ QVariantList TrainManager::getTrains_api() {
         Station endStation = std::get<0>(endStationInfo);
         Time endTime = std::get<1>(endStationInfo);
         map["startStationName"] = startStation.getStationName();
-        map["startHour"] = startTime.getHour();
-        map["startMinute"] = startTime.getMinute();
+        map["startHour"] = startTime.getHour(); map["startMinute"] = startTime.getMinute();
         map["endStationName"] = endStation.getStationName();
-        map["endHour"] = endTime.getHour();
-        map["endMinute"] = endTime.getMinute();
-
+        map["endHour"] = endTime.getHour(); map["endMinute"] = endTime.getMinute();
         int intervalSeconds = train.getTimetable().getInterval(startStation, endStation);
-        int hours = intervalSeconds / 3600, minutes = (intervalSeconds % 3600) / 60;
-        map["intervalHour"] = hours;
-        map["intervalMinute"] = minutes;
-
+        map["intervalHour"] = intervalSeconds / 3600; map["intervalMinute"] = (intervalSeconds % 3600) / 60;
         list << map;
     }
     return list;
@@ -46,152 +52,59 @@ QVariantMap TrainManager::deleteTrain_api(const QString &trainNumber) {
     QVariantMap result;
     for (auto it = trains.begin(); it != trains.end(); it++) {
         if (it->getNumber() == trainNumber) {
-            result["success"] = true;
-            result["message"] = QString("车次 %1 删除成功！").arg(trainNumber);
             trains.erase(it);
-            return result;
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db); q.prepare("DELETE FROM trains WHERE train_number = ?"); q.addBindValue(trainNumber); q.exec();
+            }
+            result["success"] = true; result["message"] = "删除成功！"; return result;
         }
     }
-    result["success"] = false;
-    result["message"] = QString("未找到车次 %1").arg(trainNumber);
-    return result;
+    result["success"] = false; return result;
 }
 
 QVariantList TrainManager::getTimetableInfo_api(const QString &trainNumber) {
-    QVariantList list;
-    auto findResult = getTrainByTrainNumber(trainNumber);
-    if (!findResult) {
-        return list;
-    }
-    Train &train = findResult.value();
-    std::vector<std::tuple<Station, Time, Time, int, int, int, QString>> info = train.getTimetable().getInfo();
-    
+    QVariantList list; auto findResult = getTrainByTrainNumber(trainNumber); if (!findResult) return list;
+    Train &train = findResult.value(); std::vector<std::tuple<Station, Time, Time, int, int, int, QString>> info = train.getTimetable().getInfo();
     for (auto &t : info) {
-        QVariantMap map;
-        Station station = std::get<0>(t);
-        Time arriveTime = std::get<1>(t);
-        Time departureTime = std::get<2>(t);
-        int arriveDay = std::get<3>(t);
-        int departureDay = std::get<4>(t);
-        int stopInterval = std::get<5>(t);
-        QString passInfo = std::get<6>(t);
-        
-        map["stationName"] = station.getStationName();
-        map["arriveHour"] = arriveTime.getHour();
-        map["arriveMinute"] = arriveTime.getMinute();
-        map["arriveDay"] = arriveDay;
-        map["departureHour"] = departureTime.getHour();
-        map["departureMinute"] = departureTime.getMinute();
-        map["departureDay"] = departureDay;
-        map["stopInterval"] = stopInterval;
-        map["passInfo"] = passInfo;
-        list << map;
+        QVariantMap map; map["stationName"] = std::get<0>(t).getStationName(); map["arriveHour"] = std::get<1>(t).getHour(); map["arriveMinute"] = std::get<1>(t).getMinute(); map["arriveDay"] = std::get<3>(t); map["departureHour"] = std::get<2>(t).getHour(); map["departureMinute"] = std::get<2>(t).getMinute(); map["departureDay"] = std::get<4>(t); map["stopInterval"] = std::get<5>(t); map["passInfo"] = std::get<6>(t); list << map;
     }
     return list;
 }
 
 QVariantList TrainManager::getTimetableInfo_api(const QString &trainNumber, const QString &startStationName, const QString &endStationName) {
-    QVariantList list;
-    auto findResult = getTrainByTrainNumber(trainNumber);
-    if (!findResult) {
-        return list;
-    }
-    Train &train = findResult.value();
-    std::vector<std::tuple<Station, Time, Time, int, int, int, QString>> info = train.getTimetable().getInfo(startStationName, endStationName);
-    
+    QVariantList list; auto findResult = getTrainByTrainNumber(trainNumber); if (!findResult) return list;
+    Train &train = findResult.value(); std::vector<std::tuple<Station, Time, Time, int, int, int, QString>> info = train.getTimetable().getInfo(startStationName, endStationName);
     for (auto &t : info) {
-        QVariantMap map;
-        Station station = std::get<0>(t);
-        Time arriveTime = std::get<1>(t);
-        Time departureTime = std::get<2>(t);
-        int arriveDay = std::get<3>(t);
-        int departureDay = std::get<4>(t);
-        int stopInterval = std::get<5>(t);
-        QString passInfo = std::get<6>(t);
-        
-        map["stationName"] = station.getStationName();
-        map["arriveHour"] = arriveTime.getHour();
-        map["arriveMinute"] = arriveTime.getMinute();
-        map["arriveDay"] = arriveDay;
-        map["departureHour"] = departureTime.getHour();
-        map["departureMinute"] = departureTime.getMinute();
-        map["departureDay"] = departureDay;
-        map["stopInterval"] = stopInterval;
-        map["passInfo"] = passInfo;
-        list << map;
-
-        qWarning() << station.getStationName();
+        QVariantMap map; map["stationName"] = std::get<0>(t).getStationName(); map["arriveHour"] = std::get<1>(t).getHour(); map["arriveMinute"] = std::get<1>(t).getMinute(); map["arriveDay"] = std::get<3>(t); map["departureHour"] = std::get<2>(t).getHour(); map["departureMinute"] = std::get<2>(t).getMinute(); map["departureDay"] = std::get<4>(t); map["stopInterval"] = std::get<5>(t); map["passInfo"] = std::get<6>(t); list << map;
     }
     return list;
 }
 
 QVariantList TrainManager::getCarriages_api(const QString &trainNumber) {
-    QVariantList list;
-    auto findResult = getTrainByTrainNumber(trainNumber);
-    if (!findResult) {
-        qWarning() << "未找到车次:" << trainNumber;
-        return list;
-    }
-    Train &train = findResult.value();
-    std::vector<std::tuple<QString, int, int>> carriages = train.getCarriages();
-    
-    for (const auto &carriage : carriages) {
-        QVariantMap map;
-        map["seatLevel"] = std::get<0>(carriage);
-        map["rows"] = std::get<1>(carriage);
-        map["cols"] = std::get<2>(carriage);
-        list << map;
-    }
-    
-    qWarning() << "获取车次" << trainNumber << "的车厢数量:" << list.size();
+    QVariantList list; auto findResult = getTrainByTrainNumber(trainNumber); if (!findResult) return list;
+    Train &train = findResult.value(); std::vector<std::tuple<QString, int, int>> carriages = train.getCarriages();
+    for (const auto &carriage : carriages) { QVariantMap map; map["seatLevel"] = std::get<0>(carriage); map["rows"] = std::get<1>(carriage); map["cols"] = std::get<2>(carriage); list << map; }
     return list;
 }
 
 QVariantMap TrainManager::updateTimetableAndTrainNumberByTrainNumber(const QString &oldTrainNumber, Timetable &timetable, const QString &newTrainNumber) {
     QVariantMap result;
-    
-    // 如果 oldTrainNumber 为空，说明是添加新车次
     if (oldTrainNumber == "") {
-        // 检查新车次号是否已存在
-        auto findTrainResult = getTrainByTrainNumber(newTrainNumber);
-        if (findTrainResult) {
-            result["success"] = false;
-            result["message"] = QString("车次 %1 已存在！").arg(newTrainNumber);
-            return result;
-        }
-        // 创建新车次
-        Train newTrain;
-        newTrain.setNumber(newTrainNumber);
-        newTrain.setTimetable(timetable);
-        trains.push_back(newTrain);
-        result["success"] = true;
-        result["message"] = QString("添加成功！");
-        return result;
+        if (getTrainByTrainNumber(newTrainNumber)) { result["success"] = false; return result; }
+        Train newTrain; newTrain.setNumber(newTrainNumber); newTrain.setTimetable(timetable); trains.push_back(newTrain);
+        if (railwayPgIsOpen()) saveToPostgres();
+        result["success"] = true; return result;
     }
-    
-    // 如果新车次号和旧车次号不同，检查新车次号是否已存在
-    if (oldTrainNumber != newTrainNumber) {
-        auto findTrainResult = getTrainByTrainNumber(newTrainNumber);
-        if (findTrainResult) {
-            result["success"] = false;
-            result["message"] = QString("车次 %1 已存在！").arg(newTrainNumber);
-            return result;
-        }
-    }
-    
-    // 修改现有车次
+    if (oldTrainNumber != newTrainNumber && getTrainByTrainNumber(newTrainNumber)) { result["success"] = false; return result; }
     for (auto &train : trains) {
         if (train.getNumber() == oldTrainNumber) {
-            train.setTimetable(timetable);
-            train.setNumber(newTrainNumber);
-            result["success"] = true;
-            result["message"] = QString("更新成功！");
-            return result;
+            train.setTimetable(timetable); train.setNumber(newTrainNumber);
+            if (railwayPgIsOpen()) saveToPostgres();
+            result["success"] = true; return result;
         }
     }
-    result["success"] = false;
-    result["message"] = QString("未找到车次 %1，更新失败！").arg(oldTrainNumber);
-    return result;
+    result["success"] = false; return result;
 }
 
 QVariantMap TrainManager::updateSeatTemplateByTrainNumber(const QString &trainNumber, std::vector<std::tuple<QString, int, int> > carriages) {
@@ -199,61 +112,79 @@ QVariantMap TrainManager::updateSeatTemplateByTrainNumber(const QString &trainNu
     for (auto it = trains.begin(); it != trains.end(); it++) {
         if (it->getNumber() == trainNumber) {
             it->setCarriages(carriages);
-            result["success"] = true;
-            result["message"] = "修改成功！";
-            return result;
+            if (railwayPgIsOpen()) saveToPostgres();
+            result["success"] = true; return result;
         }
     }
-    result["success"] = false;
-    result["message"] = QString("车次 %1 不存在！").arg(trainNumber);
-    return result;
+    result["success"] = false; return result;
 }
 
 std::vector<std::tuple<Train, Station, Station>> TrainManager::getRoutesByCities(const QString &startCityName, const QString &endCityName) {
     std::vector<std::tuple<Train, Station, Station>> result;
     for (auto &train : trains) {
         std::vector<std::tuple<Station, Station>> stationPairs = train.getTimetable().getStationPairsBetweenCities(startCityName, endCityName);
-        for (auto &pair : stationPairs) {
-            Station s1 = std::get<0>(pair);
-            Station s2 = std::get<1>(pair);
-            std::tuple<Train, Station, Station> t = std::make_tuple(train, s1, s2);
-            result.push_back(t);
-        }
+        for (auto &pair : stationPairs) result.push_back(std::make_tuple(train, std::get<0>(pair), std::get<1>(pair)));
     }
     return result;
 }
 
 std::optional<Train> TrainManager::getTrainByTrainNumber(const QString &trainNumber) {
-    for (auto &train : trains) {
-        if (train.getNumber() == trainNumber) {
-            return train;
-        }
-    }
-    return std::nullopt;
+    for (auto &train : trains) if (train.getNumber() == trainNumber) return train; return std::nullopt;
 }
 
-
 bool TrainManager::readFromFile(const char filename[]) {
-    std::fstream fis(filename, std::ios::in);
-    if (!fis) {
-        qWarning() << "列车文件不存在！";
-        return false;
-    }
-    Train train;
-    while (fis >> train) {
-        trains.push_back(train);
-    }
-    return true;
+    std::fstream fis(filename, std::ios::in); if (!fis) return false;
+    Train train; while (fis >> train) trains.push_back(train); return true;
 }
 
 bool TrainManager::writeToFile(const char filename[]) {
-    std::fstream fos(filename, std::ios::out);
-    if (!fos) {
-        qWarning() << "无法打开列车文件进行写入！";
-        return false;
+    std::fstream fos(filename, std::ios::out); if (!fos) return false;
+    for (auto &train : trains) fos << train << std::endl; return true;
+}
+
+void TrainManager::loadFromPostgres() {
+    trains.clear();
+    QSqlDatabase db = QSqlDatabase::database("railway", false);
+    if (!db.isOpen()) return;
+
+    QSqlQuery ping(db); if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
+
+    QSqlQuery q(db);
+    if (!q.exec("SELECT train_number, seat_config FROM trains ORDER BY train_id")) return;
+
+    while (q.next()) {
+        Train tr;
+        if (RailwayPgCodec::trainFromSeatConfigJson(q.value(1).toString(), q.value(0).toString(), tr)) {
+            trains.push_back(tr);
+        }
     }
-    for (auto &train : trains) {
-        fos << train << std::endl;
+}
+
+void TrainManager::saveToPostgres() {
+    QSqlDatabase db = QSqlDatabase::database("railway", false);
+    if (!db.isOpen()) return;
+
+    QSqlQuery ping(db); if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
+    if (!db.transaction()) return;
+
+    for (Train &train : trains) {
+        std::tuple<Station, Time> sInfo = train.getTimetable().getStartStationInfo();
+        std::tuple<Station, Time> eInfo = train.getTimetable().getEndStationInfo();
+
+        QSqlQuery qs0(db); qs0.prepare("SELECT station_id FROM stations WHERE station_name = ? LIMIT 1"); qs0.addBindValue(std::get<0>(sInfo).getStationName());
+        if (!qs0.exec() || !qs0.next()) continue; // 跳过不完整的车站
+        const int sid0 = qs0.value(0).toInt();
+
+        QSqlQuery qs1(db); qs1.prepare("SELECT station_id FROM stations WHERE station_name = ? LIMIT 1"); qs1.addBindValue(std::get<0>(eInfo).getStationName());
+        if (!qs1.exec() || !qs1.next()) continue;
+        const int sid1 = qs1.value(0).toInt();
+
+        QString cfg = RailwayPgCodec::trainToSeatConfigJson(train);
+
+        QSqlQuery q(db);
+        q.prepare("INSERT INTO trains (train_number, start_station_id, end_station_id, seat_config) VALUES (?,?,?,?) ON CONFLICT (train_number) DO UPDATE SET start_station_id = EXCLUDED.start_station_id, end_station_id = EXCLUDED.end_station_id, seat_config = EXCLUDED.seat_config");
+        q.addBindValue(train.getNumber()); q.addBindValue(sid0); q.addBindValue(sid1); q.addBindValue(cfg);
+        if (!q.exec()) { db.rollback(); return; }
     }
-    return true;
+    db.commit();
 }

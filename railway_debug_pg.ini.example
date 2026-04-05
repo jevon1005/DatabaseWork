@@ -1,0 +1,10 @@
+# 复制本文件为 railway_debug_pg.ini 后填写真实值（railway_debug_pg.ini 已加入 .gitignore，勿提交密码）
+# Supabase：Dashboard → Project Settings → Database → Connection parameters
+
+[postgres]
+host=db.xxxxx.supabase.co
+port=5432
+database=postgres
+user=postgres
+password=
+sslmode=require

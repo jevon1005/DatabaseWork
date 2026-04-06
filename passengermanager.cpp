@@ -7,7 +7,10 @@
 #include <QSqlQuery>
 
 PassengerManager::PassengerManager(QObject *parent) : QObject{parent} {
-    if (railwayPgIsOpen()) loadFromPostgres();
+    // 数据将通过DataLoader多线程加载
+}
+
+void PassengerManager::initializeData() {
     // 💡 自动迁移逻辑
     if (passengers.empty()) {
         qDebug() << "[乘车人] 云端为空，从本地 txt 加载并迁移至云端...";
@@ -48,7 +51,13 @@ QVariantMap PassengerManager::editPassenger_api(const QString &username, const Q
     for (auto it = passengers.begin(); it != passengers.end(); it++) {
         if (it->getUsername() == username && it->getId() == id_old) {
             it->setName(name); it->setPhoneNumber(phoneNumber); it->setId(id_new); it->setType(type);
-            if (railwayPgIsOpen()) saveToPostgres(); // 实时保存
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE passengers SET name = ?, phone = ?, id_number = ?, passenger_type = ? WHERE id_number = ?");
+                q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id_new); q.addBindValue(type); q.addBindValue(id_old);
+                q.exec();
+            }
             result["success"] = true; result["message"] = "修改成功！"; return result;
         }
     }
@@ -61,7 +70,19 @@ QVariantMap PassengerManager::addPassenger_api(QVariantMap info) {
     if (getPassengerByUsernameAndId(username, id)) { result["success"] = false; result["message"] = "重复"; return result; }
     Passenger passenger(name, phoneNumber, id, type, username);
     passengers.push_back(passenger);
-    if (railwayPgIsOpen()) saveToPostgres(); // 实时保存
+    if (railwayPgIsOpen()) {
+        QSqlDatabase db = QSqlDatabase::database("railway", false);
+        QSqlQuery qu(db);
+        qu.prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1");
+        qu.addBindValue(username);
+        if (qu.exec() && qu.next()) {
+            int uid = qu.value(0).toInt();
+            QSqlQuery q(db);
+            q.prepare("INSERT INTO passengers (user_id, name, id_number, phone, passenger_type) VALUES (?,?,?,?,?)");
+            q.addBindValue(uid); q.addBindValue(name); q.addBindValue(id); q.addBindValue(phoneNumber); q.addBindValue(type);
+            q.exec();
+        }
+    }
     result["success"] = true; result["message"] = "添加成功"; return result;
 }
 
@@ -93,10 +114,13 @@ bool PassengerManager::writeToFile(const char filename[]) {
 }
 
 void PassengerManager::loadFromPostgres() {
-    passengers.clear();
     QSqlDatabase db = QSqlDatabase::database("railway", false);
+    loadFromPostgres(db);
+}
+
+void PassengerManager::loadFromPostgres(QSqlDatabase &db) {
+    passengers.clear();
     if (!db.isOpen()) return;
-    QSqlQuery ping(db); if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
     QSqlQuery q(db);
     if (q.exec("SELECT u.username, p.name, p.phone, p.id_number, p.passenger_type FROM passengers p JOIN users u ON u.user_id = p.user_id ORDER BY p.passenger_id")) {
         while (q.next()) passengers.push_back(Passenger(q.value(1).toString(), q.value(2).toString(), q.value(3).toString(), q.value(4).toString(), q.value(0).toString()));

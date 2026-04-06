@@ -7,6 +7,7 @@
 #include "passenger.h"
 #include <QVariantList>
 #include <QVariantMap>
+#include <QSqlDatabase>
 
 class PassengerManager : public QObject
 {
@@ -16,6 +17,7 @@ private:
 
 public:
     explicit PassengerManager(QObject *parent = nullptr);
+    Q_INVOKABLE void initializeData();
     Q_INVOKABLE QVariantList getPassengersByUsername_api(const QString &username);
     Q_INVOKABLE QVariantMap deletePassengerByUsernameAndId_api(const QString &username, const QString &id);
     // 修改乘车人信息
@@ -29,6 +31,7 @@ public:
     bool deletePassengersByUsername(const QString &username);
 
     void loadFromPostgres();
+    void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
 
 private:

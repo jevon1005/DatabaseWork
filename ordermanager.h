@@ -6,6 +6,7 @@
 #include "order.h"
 #include <QVariantMap>
 #include <optional>
+#include <QSqlDatabase>
 
 class TrainManager;
 
@@ -19,6 +20,7 @@ private:
 public:
     explicit OrderManager(TrainManager *trainManager = nullptr, QObject *parent = nullptr);
     ~OrderManager();
+    Q_INVOKABLE void initializeData();
 
     Q_INVOKABLE QVariantList getOrdersByUsername_api(const QString &username);
     Q_INVOKABLE QVariantMap cancelOrder_api(const QString &orderNumber);
@@ -49,6 +51,7 @@ public:
     bool hasUnusedOrderForTrain(const QString &trainNumber);
 
     void loadFromPostgres();
+    void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
 
 private:

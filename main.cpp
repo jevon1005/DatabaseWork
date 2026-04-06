@@ -13,6 +13,7 @@
 #include "trainmanager.h"
 #include "passengermanager.h"
 #include "railway_pg_connection.h"
+#include "dataloader.h"
 
 bool connectToCloudDB() {
     if (!QSqlDatabase::drivers().contains("QPSQL")) {
@@ -58,19 +59,31 @@ int main(int argc, char *argv[])
                                                      accountManager,
                                                      passengerManager);
 
+    // 创建DataLoader
+    DataLoader* loader = new DataLoader(stationManager, trainManager, accountManager, passengerManager, orderManager);
+
+    // 注册到QML
     engine.rootContext()->setContextProperty("stationManager", stationManager);
     engine.rootContext()->setContextProperty("orderManager", orderManager);
     engine.rootContext()->setContextProperty("trainManager", trainManager);
     engine.rootContext()->setContextProperty("bookingSystem", bookingSystem);
     engine.rootContext()->setContextProperty("accountManager", accountManager);
     engine.rootContext()->setContextProperty("passengerManager", passengerManager);
+    engine.rootContext()->setContextProperty("appLoader", loader);
     qmlRegisterSingletonType(QUrl("qrc:/qml/SessionState.qml"), "MyApp", 1, 0, "SessionState");
 
-    const QUrl mainUrl("qrc:/qml/main.qml");
-    engine.load(mainUrl);
+    // 先加载启动页
+    const QUrl splashUrl("qrc:/qml/Splash.qml");
+    engine.load(splashUrl);
     if (engine.rootObjects().isEmpty()) {
-        qWarning() << "main.qml 加载失败";
-        return -1;
+        qWarning() << "Splash.qml 加载失败";
+        // 加载失败时，直接加载main.qml
+        const QUrl mainUrl("qrc:/qml/main.qml");
+        engine.load(mainUrl);
+        if (engine.rootObjects().isEmpty()) {
+            qWarning() << "main.qml 加载失败";
+            return -1;
+        }
     }
     return app.exec();
 }

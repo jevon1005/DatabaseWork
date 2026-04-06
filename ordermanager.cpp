@@ -13,6 +13,13 @@
 #include <QSqlQuery>
 #include <QSqlError>
 
+namespace {
+int lookupUserId(QSqlDatabase &db, const QString &username);
+int lookupTrainId(QSqlDatabase &db, const QString &trainNumber);
+int lookupPassengerId(QSqlDatabase &db, const QString &idNumber);
+int lookupStationId(QSqlDatabase &db, const QString &stationName);
+}
+
 // 辅助函数：将 Order 实体转换为 QVariantMap 供 QML 使用
 QVariantMap convertOrderToMap(Order &order) {
     QVariantMap map;
@@ -55,10 +62,10 @@ QVariantMap convertOrderToMap(Order &order) {
 OrderManager::OrderManager(TrainManager *trainManager, QObject *parent)
     : QObject{parent}, m_trainManager(trainManager)
 {
-    if (railwayPgIsOpen()) {
-        loadFromPostgres();
-    }
+    // 数据将通过DataLoader多线程加载
+}
 
+void OrderManager::initializeData() {
     // 💡 自动迁移逻辑：如果云端没数据，读本地并上传
     if (orders.empty()) {
         qDebug() << "[订单] 云端为空，从本地加载并迁移至云端...";
@@ -187,11 +194,56 @@ std::vector<std::tuple<int, int, int>> OrderManager::getUnavailableSeatsInfo(con
 }
 
 bool OrderManager::createOrder(Order &order) {
+    // 检查座位分配是否成功
+    if (order.getCarriageNumber() == -1 || order.getSeatRow() == -1 || order.getSeatCol() == -1) {
+        qWarning() << "座位分配失败";
+        return false;
+    }
+    
     long long maxOrderNumberLongLong = 0;
     for (auto o : orders) maxOrderNumberLongLong = std::max(maxOrderNumberLongLong, o.getOrderNumber().toLongLong());
     order.setOrderNumber(QString("%1").arg(maxOrderNumberLongLong + 1, 10, 10, QChar('0')));
     orders.insert(orders.begin(), order);
-    if (railwayPgIsOpen()) saveToPostgres(); // 实时保存到云端
+    
+    if (railwayPgIsOpen()) {
+        QSqlDatabase db = QSqlDatabase::database("railway", false);
+        const int uid = lookupUserId(db, order.getUsername());
+        const int tid = lookupTrainId(db, order.getTrainNumber());
+        const int pid = lookupPassengerId(db, order.getPassenger().getId());
+        const int sid = lookupStationId(db, order.getStartStation().getStationName());
+        const int eid = lookupStationId(db, order.getEndStation().getStationName());
+        
+        if (uid >= 0 && tid >= 0 && pid >= 0 && sid >= 0 && eid >= 0) {
+            Timetable ttCopy = order.getTimetable();
+            const QString snap = RailwayPgCodec::timetableToStopsJson(ttCopy);
+            const QDate td(order.getDate().getYear(), order.getDate().getMonth(), order.getDate().getDay());
+            QSqlQuery qi(db);
+            qi.prepare("INSERT INTO orders (order_number, user_id, train_id, passenger_id, start_station_id, end_station_id, seat_level, carriage_number, seat_row, seat_col, price, travel_date, status, timetable_snapshot) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            qi.addBindValue(order.getOrderNumber()); qi.addBindValue(uid); qi.addBindValue(tid); qi.addBindValue(pid); qi.addBindValue(sid); qi.addBindValue(eid); qi.addBindValue(order.getSeatLevel()); qi.addBindValue(order.getCarriageNumber()); qi.addBindValue(order.getSeatRow()); qi.addBindValue(order.getSeatCol()); qi.addBindValue(order.getPrice()); qi.addBindValue(td); qi.addBindValue(order.getStatus()); qi.addBindValue(snap);
+            
+            if (!qi.exec()) {
+                qWarning() << "订单插入数据库失败:" << qi.lastError().text();
+                // 从本地订单列表中移除失败的订单
+                for (auto it = orders.begin(); it != orders.end(); ++it) {
+                    if (it->getOrderNumber() == order.getOrderNumber()) {
+                        orders.erase(it);
+                        break;
+                    }
+                }
+                return false;
+            }
+        } else {
+            qWarning() << "订单关联的实体未找到: uid=" << uid << " tid=" << tid << " pid=" << pid << " sid=" << sid << " eid=" << eid;
+            // 从本地订单列表中移除失败的订单
+            for (auto it = orders.begin(); it != orders.end(); ++it) {
+                if (it->getOrderNumber() == order.getOrderNumber()) {
+                    orders.erase(it);
+                    break;
+                }
+            }
+            return false;
+        }
+    }
     return true;
 }
 
@@ -207,7 +259,13 @@ bool OrderManager::cancelOrder(const QString &orderNumber) {
     for (auto &order : orders) {
         if (order.getOrderNumber() == orderNumber) {
             order.setStatus("已取消");
-            if (railwayPgIsOpen()) saveToPostgres(); // 实时保存到云端
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE orders SET status = '已取消' WHERE order_number = ?");
+                q.addBindValue(orderNumber);
+                q.exec();
+            }
             return true;
         }
     }
@@ -218,7 +276,13 @@ bool OrderManager::rescheduleOrder(const QString &orderNumber) {
     for (auto &order : orders) {
         if (order.getOrderNumber() == orderNumber) {
             order.setStatus("已改签");
-            if (railwayPgIsOpen()) saveToPostgres(); // 实时保存到云端
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE orders SET status = '已改签' WHERE order_number = ?");
+                q.addBindValue(orderNumber);
+                q.exec();
+            }
             return true;
         }
     }
@@ -289,11 +353,13 @@ int lookupStationId(QSqlDatabase &db, const QString &stationName) {
 }
 
 void OrderManager::loadFromPostgres() {
-    orders.clear();
     QSqlDatabase db = QSqlDatabase::database("railway", false);
-    if (!db.isOpen()) return;
+    loadFromPostgres(db);
+}
 
-    QSqlQuery ping(db); if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
+void OrderManager::loadFromPostgres(QSqlDatabase &db) {
+    orders.clear();
+    if (!db.isOpen()) return;
 
     QSqlQuery q(db);
     if (!q.exec("SELECT o.order_number, t.train_number, o.price, o.travel_date, o.seat_level, o.carriage_number, o.seat_row, o.seat_col, o.status, o.timetable_snapshot, u.username, p.name, p.phone, p.id_number, p.passenger_type, ss.station_name, sc.city_name, es.station_name, ec.city_name FROM orders o JOIN trains t ON t.train_id = o.train_id JOIN users u ON u.user_id = o.user_id JOIN passengers p ON p.passenger_id = o.passenger_id JOIN stations ss ON ss.station_id = o.start_station_id JOIN cities sc ON sc.city_id = ss.city_id JOIN stations es ON es.station_id = o.end_station_id JOIN cities ec ON ec.city_id = es.city_id ORDER BY o.order_id")) {

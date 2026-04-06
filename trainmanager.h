@@ -6,6 +6,7 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <optional>
+#include <QSqlDatabase>
 #include "train.h"
 
 class TrainManager : public QObject
@@ -18,6 +19,7 @@ private:
 public:
     explicit TrainManager(QObject *parent = nullptr);
     ~TrainManager();
+    Q_INVOKABLE void initializeData();
     Q_INVOKABLE QVariantList getTrains_api();
     Q_INVOKABLE QVariantMap deleteTrain_api(const QString &trainNumber);
     // 通过车次号获得该车次的时刻表信息(默认第一个起始站,最后一个终点站)
@@ -34,6 +36,7 @@ public:
     std::optional<Train> getTrainByTrainNumber(const QString &trainNumber);
 
     void loadFromPostgres();
+    void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
 
 private:

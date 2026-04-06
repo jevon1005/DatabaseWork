@@ -44,6 +44,7 @@ add_executable(appRailwaySystem
     passengermanager.h passengermanager.cpp
     railway_pg_codec.h railway_pg_codec.cpp
     railway_pg_connection.h railway_pg_connection.cpp
+    dataloader.h dataloader.cpp
 )
 
 target_link_libraries(appRailwaySystem

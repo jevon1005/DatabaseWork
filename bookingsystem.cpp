@@ -337,6 +337,13 @@ QVariantMap BookingSystem::createOrder_api(const QVariantMap &info) {
         }
     }
 
+    // 检查是否找到座位
+    if (!findFlag) {
+        result["success"] = false;
+        result["message"] = "没有可用座位，请选择其他车次或座位类型！";
+        return result;
+    }
+
     // 计算票价
     std::tuple<double, double, double> prices = computePrice(train.getNumber(), startStation, endStation);
     double rawPrice = (seatLevel == "一等座") ? std::get<0>(prices) :
@@ -352,13 +359,19 @@ QVariantMap BookingSystem::createOrder_api(const QVariantMap &info) {
                 startStation, endStation, seatLevel, carriageNumber, seatRow, seatCol,
                 "待乘坐", user.getUsername());
     // 向OrderManager提交
-    order_manager->createOrder(order);
+    bool createSuccess = order_manager->createOrder(order);
     // 如果有待改签订单号，则标记为“已改签”
-    if (pendingRescheduleOrderNumber != "")
+    if (createSuccess && pendingRescheduleOrderNumber != "") {
         order_manager->rescheduleOrder(pendingReschduleOrder.getOrderNumber());
+    }
 
-    result["success"] = true;
-    result["message"] = "车票预定成功，可在“我的订单”查看车票！";
+    if (createSuccess) {
+        result["success"] = true;
+        result["message"] = "车票预定成功，可在“我的订单”查看车票！";
+    } else {
+        result["success"] = false;
+        result["message"] = "订单提交失败，请稍后重试！";
+    }
     return result;
 }
 

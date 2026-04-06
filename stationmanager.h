@@ -2,6 +2,7 @@
 #define STATIONMANAGER_H
 #include <QObject>
 #include <vector>
+#include <QSqlDatabase>
 #include "station.h"
 #include "city.h"
 
@@ -16,6 +17,7 @@ private:
 public:
     explicit StationManager(QObject *parent = nullptr);
     ~StationManager();
+    Q_INVOKABLE void initializeData();
     Q_INVOKABLE QStringList getCitiesName_api();
     Q_INVOKABLE QVariantMap getCitiesByStationNames_api(const QString &startStationName, const QString &endStationName);
     // 时刻表修改、添加时，需要获取所有的车站名
@@ -25,6 +27,7 @@ public:
     std::optional<City> getCityByCityName(const QString &cityName);
 
     void loadFromPostgres();
+    void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
 
 private:

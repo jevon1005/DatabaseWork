@@ -12,9 +12,10 @@
 #include <QVariant>
 
 AccountManager::AccountManager(QObject *parent) : QObject{parent} {
-    if (railwayPgIsOpen()) {
-        loadFromPostgres();
-    }
+    // 数据将通过DataLoader多线程加载
+}
+
+void AccountManager::initializeData() {
     // 💡 自动迁移逻辑：如果云端没数据，自动加载本地并同步到云端！
     if (users.empty() && admins.empty()) {
         qDebug() << "[账号] 云端为空，开始从本地加载并自动迁移至云端...";
@@ -85,7 +86,13 @@ QVariantMap AccountManager::lockUser_api(const QString &username) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             it->lock();
-            if (railwayPgIsOpen()) saveToPostgres(); // 实时保存
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE users SET locked = true WHERE username = ?");
+                q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; result["message"] = "成功锁定"; return result;
         }
     }
@@ -97,7 +104,13 @@ QVariantMap AccountManager::lockAdmin_api(const QString &username) {
     for (auto it = admins.begin(); it != admins.end(); it++) {
         if (it->getUsername() == username) {
             it->lock();
-            if (railwayPgIsOpen()) saveToPostgres(); // 实时保存
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE admins SET locked = true WHERE username = ?");
+                q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; result["message"] = "成功锁定"; return result;
         }
     }
@@ -109,7 +122,13 @@ QVariantMap AccountManager::unlockUser_api(const QString &username) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             it->unlock();
-            if (railwayPgIsOpen()) saveToPostgres();
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE users SET locked = false WHERE username = ?");
+                q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; return result;
         }
     }
@@ -121,7 +140,13 @@ QVariantMap AccountManager::unlockAdmin_api(const QString &username) {
     for (auto it = admins.begin(); it != admins.end(); it++) {
         if (it->getUsername() == username) {
             it->unlock();
-            if (railwayPgIsOpen()) saveToPostgres();
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE admins SET locked = false WHERE username = ?");
+                q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; return result;
         }
     }
@@ -138,7 +163,13 @@ QVariantMap AccountManager::editUserProfile_api(const QString &username, const Q
         if (it->getUsername() == username) {
             UserProfile userProfile(name, phoneNumber, id);
             it->setProfile(userProfile);
-            if (railwayPgIsOpen()) saveToPostgres(); // 实时保存
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE users SET full_name = ?, phone = ?, id_card = ? WHERE username = ?");
+                q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id); q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; result["message"] = QString("信息修改成功"); return result;
         }
     }
@@ -164,7 +195,13 @@ QVariantMap AccountManager::registerUser_api(QVariantMap info) {
     UserProfile profile(name, phoneNumber, id);
     User user(profile, false, username, password);
     users.push_back(user);
-    if (railwayPgIsOpen()) saveToPostgres(); // 实时保存
+    if (railwayPgIsOpen()) {
+        QSqlDatabase db = QSqlDatabase::database("railway", false);
+        QSqlQuery q(db);
+        q.prepare("INSERT INTO users (username, password, locked, full_name, phone, id_card) VALUES (?,?,?,?,?,?)");
+        q.addBindValue(username); q.addBindValue(password); q.addBindValue(false); q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id);
+        q.exec();
+    }
     result["success"] = true; result["message"] = "注册成功！"; return result;
 }
 
@@ -175,14 +212,26 @@ QVariantMap AccountManager::resetPassword_api(QVariantMap info) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             it->setPassword(password);
-            if (railwayPgIsOpen()) saveToPostgres();
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE users SET password = ? WHERE username = ?");
+                q.addBindValue(password); q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; result["message"] = "重置成功"; return result;
         }
     }
     for (auto it = admins.begin(); it != admins.end(); it++) {
         if (it->getUsername() == username) {
             it->setPassword(password);
-            if (railwayPgIsOpen()) saveToPostgres();
+            if (railwayPgIsOpen()) {
+                QSqlDatabase db = QSqlDatabase::database("railway", false);
+                QSqlQuery q(db);
+                q.prepare("UPDATE admins SET password = ? WHERE username = ?");
+                q.addBindValue(password); q.addBindValue(username);
+                q.exec();
+            }
             result["success"] = true; result["message"] = "重置成功"; return result;
         }
     }
@@ -240,13 +289,13 @@ void AccountManager::writeToFile(const char filenameUser[], const char filenameA
 }
 
 void AccountManager::loadFromPostgres() {
-    users.clear(); admins.clear();
     QSqlDatabase db = QSqlDatabase::database("railway", false);
-    if (!db.isOpen()) return;
+    loadFromPostgres(db);
+}
 
-    // 断线重连检测
-    QSqlQuery ping(db);
-    if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
+void AccountManager::loadFromPostgres(QSqlDatabase &db) {
+    users.clear(); admins.clear();
+    if (!db.isOpen()) return;
 
     QSqlQuery qUsers(db);
     if (qUsers.exec("SELECT username, password, locked, full_name, phone, id_card FROM users ORDER BY user_id")) {

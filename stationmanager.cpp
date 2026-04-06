@@ -12,9 +12,10 @@
 #include <QSqlError>
 
 StationManager::StationManager(QObject *parent) : QObject{parent} {
-    if (railwayPgIsOpen()) {
-        loadFromPostgres();
-    }
+    // 数据将通过DataLoader多线程加载
+}
+
+void StationManager::initializeData() {
     // 💡 自动迁移逻辑：如果云端没数据，读本地并自动上传
     if (cities.empty() || stations.empty()) {
         qDebug() << "[车站] 云端为空，从本地 txt 加载并自动迁移至云端...";
@@ -112,14 +113,14 @@ void StationManager::writeToFile(const char filenameStations[], const char filen
 }
 
 void StationManager::loadFromPostgres() {
+    QSqlDatabase db = QSqlDatabase::database("railway", false);
+    loadFromPostgres(db);
+}
+
+void StationManager::loadFromPostgres(QSqlDatabase &db) {
     cities.clear();
     stations.clear();
-    QSqlDatabase db = QSqlDatabase::database("railway", false);
     if (!db.isOpen()) return;
-
-    // 心跳检测，防止断连
-    QSqlQuery ping(db);
-    if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
 
     QSqlQuery qc(db);
     if (qc.exec("SELECT city_name, province, longitude, latitude FROM cities ORDER BY city_id")) {
@@ -148,26 +149,41 @@ void StationManager::saveToPostgres() {
     QSqlDatabase db = QSqlDatabase::database("railway", false);
     if (!db.isOpen()) return;
 
-    QSqlQuery ping(db);
-    if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
-
     if (!db.transaction()) return;
 
-    // 保存城市数据
-    for (City &city : cities) {
-        QSqlQuery q(db);
-        q.prepare("INSERT INTO cities (city_name, province, longitude, latitude) VALUES (?,?,?,?) "
+    // 保存城市数据（批量操作）
+    QSqlQuery qCity(db);
+    qCity.prepare("INSERT INTO cities (city_name, province, longitude, latitude) VALUES (?,?,?,?) "
                   "ON CONFLICT (city_name) DO UPDATE SET province = EXCLUDED.province, "
                   "longitude = EXCLUDED.longitude, latitude = EXCLUDED.latitude");
-        q.addBindValue(city.getName());
-        q.addBindValue(city.getProvince());
-        q.addBindValue(city.getLongitude());
-        q.addBindValue(city.getLatitude());
-        if (!q.exec()) { db.rollback(); return; }
+
+    QVariantList cityNames, provinces, longitudes, latitudes;
+    for (City &city : cities) {
+        cityNames << city.getName();
+        provinces << city.getProvince();
+        longitudes << city.getLongitude();
+        latitudes << city.getLatitude();
     }
 
-    // 保存车站数据
+    qCity.addBindValue(cityNames);
+    qCity.addBindValue(provinces);
+    qCity.addBindValue(longitudes);
+    qCity.addBindValue(latitudes);
+
+    if (!qCity.execBatch()) {
+        qWarning() << "批量插入城市失败:" << qCity.lastError();
+        db.rollback();
+        return;
+    }
+
+    // 保存车站数据（批量操作）
+    QSqlQuery qStation(db);
+    qStation.prepare("INSERT INTO stations (station_name, city_id, province) VALUES (?,?,?) "
+                     "ON CONFLICT (station_name) DO UPDATE SET city_id = EXCLUDED.city_id, province = EXCLUDED.province");
+
+    QVariantList stationNames, cityIds, stationProvinces;
     for (Station &st : stations) {
+        // 查找城市ID
         QSqlQuery qLookup(db);
         qLookup.prepare("SELECT city_id FROM cities WHERE city_name = ? LIMIT 1");
         qLookup.addBindValue(st.getCityName());
@@ -178,13 +194,19 @@ void StationManager::saveToPostgres() {
         }
         const int cityId = qLookup.value(0).toInt();
 
-        QSqlQuery q(db);
-        q.prepare("INSERT INTO stations (station_name, city_id, province) VALUES (?,?,?) "
-                  "ON CONFLICT (station_name) DO UPDATE SET city_id = EXCLUDED.city_id, province = EXCLUDED.province");
-        q.addBindValue(st.getStationName());
-        q.addBindValue(cityId);
-        q.addBindValue(QString()); // 数据库中的 province 这里传空或默认值
-        if (!q.exec()) { db.rollback(); return; }
+        stationNames << st.getStationName();
+        cityIds << cityId;
+        stationProvinces << QString(); // 数据库中的 province 这里传空或默认值
+    }
+
+    qStation.addBindValue(stationNames);
+    qStation.addBindValue(cityIds);
+    qStation.addBindValue(stationProvinces);
+
+    if (!qStation.execBatch()) {
+        qWarning() << "批量插入车站失败:" << qStation.lastError();
+        db.rollback();
+        return;
     }
 
     db.commit();

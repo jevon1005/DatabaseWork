@@ -64,5 +64,6 @@
         <file>qml/components/AccountCard.qml</file>
         <file>qml/components/SearchableComboBox.qml</file>
         <file>qml/pages/AccountManagement.qml</file>
+        <file>qml/Splash.qml</file>
     </qresource>
 </RCC>

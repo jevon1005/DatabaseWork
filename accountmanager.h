@@ -5,6 +5,7 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <vector>
+#include <QSqlDatabase>
 #include "user.h"
 #include "admin.h"
 
@@ -19,6 +20,7 @@ public:
 public:
     explicit AccountManager(QObject *parent = nullptr);
     ~AccountManager();
+    Q_INVOKABLE void initializeData();
 
     Q_INVOKABLE QVariantMap loginUser_api(const QString &username, const QString &password);
     Q_INVOKABLE QVariantMap loginAdmin_api(const QString &username, const QString &password);
@@ -46,6 +48,7 @@ public:
     std::optional<Admin> getAdminByUsername(const QString &username);
 
     void loadFromPostgres();
+    void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
 
 private:

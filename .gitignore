@@ -1,6 +1,22 @@
 build
+build-*
 
-# 本地 Supabase / Postgres 调试配置（含密码，勿提交）
+# CMake 构建文件 (如果在根目录构建)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+build.ninja
+.ninja_*
+.cmake/
+
+# Qt 自动生成
+*_autogen/
+appRailwaySystem_autogen/
+
+# 可执行文件
+*.exe
+
+# 本地 Supabase / Postgres 调试配置(含密码,勿提交)
 railway_debug_pg.ini
 
 # C++ objects and libs

@@ -1,7 +1,13 @@
 #include "dataloader.h"
+#include "railway_pg_connection.h"
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QDebug>
+#include <QtGlobal>
+#include <QSettings>
+#include <QFileInfo>
+#include <QCoreApplication>
+#include <QDir>
 
 DataLoader::DataLoader(StationManager* sm, TrainManager* tm, AccountManager* am, PassengerManager* pm, OrderManager* om)
     : m_stationManager(sm), m_trainManager(tm), m_accountManager(am), m_passengerManager(pm), m_orderManager(om)
@@ -12,19 +18,79 @@ DataLoader::~DataLoader()
 {
 }
 
+// 在子线程中读取配置文件
+static QString readThreadConfigValue(const QString &key, const QString &defaultValue = QString())
+{
+    QStringList searchPaths;
+    searchPaths << "railway_debug_pg.ini";
+    searchPaths << QCoreApplication::applicationDirPath() + "/railway_debug_pg.ini";
+    searchPaths << QCoreApplication::applicationDirPath() + "/../railway_debug_pg.ini";
+    
+    QString configPath;
+    for (const QString &path : searchPaths) {
+        QFileInfo fi(path);
+        if (fi.exists()) {
+            configPath = fi.absoluteFilePath();
+            break;
+        }
+    }
+    
+    if (configPath.isEmpty()) {
+        return defaultValue;
+    }
+
+    QSettings settings(configPath, QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("postgres"));
+    QString value = settings.value(key).toString();
+    settings.endGroup();
+    return value.isEmpty() ? defaultValue : value;
+}
+
 void DataLoader::run()
 {
-    // 在子线程中创建新的数据库连接
-    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "railway_thread");
-    db.setHostName("aws-1-ap-southeast-2.pooler.supabase.com");
-    db.setPort(6543);
-    db.setDatabaseName("postgres");
-    db.setUserName("postgres.rtjrnuejqearaubgzxnv");
-    db.setPassword("Aa1819822437");
-    db.setConnectOptions("sslmode=require;keepalives=1;keepalives_idle=30;keepalives_interval=10;keepalives_count=3");
+    // 在子线程中创建独立的数据库连接
+    QString threadConnName = QStringLiteral("railway_thread_%1")
+                             .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()));
+    
+    // 读取配置
+    QString host = qEnvironmentVariable("PGHOST");
+    QString port = qEnvironmentVariable("PGPORT", QStringLiteral("5432"));
+    QString dbname = qEnvironmentVariable("PGDATABASE", QStringLiteral("postgres"));
+    QString user = qEnvironmentVariable("PGUSER");
+    QString pass = qEnvironmentVariable("PGPASSWORD");
+    QString sslmode = qEnvironmentVariable("PGSSLMODE", QStringLiteral("require"));
+    
+    // 如果环境变量为空,从配置文件读取
+    if (host.isEmpty() || user.isEmpty()) {
+        host = readThreadConfigValue(QStringLiteral("host"));
+        port = readThreadConfigValue(QStringLiteral("port"), QStringLiteral("6543"));
+        dbname = readThreadConfigValue(QStringLiteral("database"), QStringLiteral("postgres"));
+        user = readThreadConfigValue(QStringLiteral("user"));
+        pass = readThreadConfigValue(QStringLiteral("password"));
+        sslmode = readThreadConfigValue(QStringLiteral("sslmode"), QStringLiteral("require"));
+    }
+    
+    if (host.isEmpty() || user.isEmpty()) {
+        qWarning() << "子线程:数据库配置未设置,无法加载数据";
+        emit loadFinished();
+        return;
+    }
+    
+    // 创建子线程专用连接
+    QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"), threadConnName);
+    db.setHostName(host);
+    db.setPort(port.toInt());
+    db.setDatabaseName(dbname);
+    db.setUserName(user);
+    db.setPassword(pass);
+    
+    QString connectOpts = QStringLiteral("sslmode=%1;keepalives=1;keepalives_idle=30;keepalives_interval=10;keepalives_count=3")
+                          .arg(sslmode);
+    db.setConnectOptions(connectOpts);
     
     if (!db.open()) {
-        qWarning() << "数据库连接失败:" << db.lastError().text();
+        qWarning() << "子线程:数据库连接失败:" << db.lastError().text();
+        QSqlDatabase::removeDatabase(threadConnName);
         emit loadFinished();
         return;
     }
@@ -61,6 +127,13 @@ void DataLoader::run()
 
     // 完成加载
     emit progressUpdated(100, "加载完成");
-    QSqlDatabase::removeDatabase("railway_thread");
+    
+    // 关闭并删除子线程连接(关键:让 db 对象先销毁)
+    {
+        QSqlDatabase tempDb = db;
+        tempDb.close();
+    } // tempDb 销毁
+    QSqlDatabase::removeDatabase(threadConnName);
+    
     emit loadFinished();
 }

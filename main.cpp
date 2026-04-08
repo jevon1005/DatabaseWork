@@ -15,33 +15,18 @@
 #include "railway_pg_connection.h"
 #include "dataloader.h"
 
-bool connectToCloudDB() {
-    if (!QSqlDatabase::drivers().contains("QPSQL")) {
-        qDebug() << "缺少 QPSQL 驱动！";
-        return false;
-    }
-    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "railway");
-
-    db.setHostName("aws-1-ap-southeast-2.pooler.supabase.com");
-    db.setPort(6543);
-    db.setDatabaseName("postgres");
-    db.setUserName("postgres.rtjrnuejqearaubgzxnv");
-    db.setPassword("Aa1819822437");
-    // 加入心跳保活机制，防止 Supabase 切断连接
-    db.setConnectOptions("sslmode=require;keepalives=1;keepalives_idle=30;keepalives_interval=10;keepalives_count=3");
-
-    if (!db.open()) {
-        qDebug() << "❌ 数据库连接失败:" << db.lastError().text();
-        return false;
-    }
-    qDebug() << "✅ 成功连接到 Supabase 云数据库！";
-    return true;
-}
-
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    connectToCloudDB();
+    
+    // 使用配置系统连接数据库
+    if (!QSqlDatabase::drivers().contains("QPSQL")) {
+        qDebug() << "❌ 缺少 QPSQL 驱动！";
+    } else if (!railwayPgTryOpenFromEnvironment()) {
+        qDebug() << "❌ 数据库连接失败:" << railwayPgLastError();
+    } else {
+        qDebug() << "✅ 成功连接到 Supabase 云数据库！";
+    }
 
     qputenv("QT_QUICK_CONTROLS_STYLE", QByteArray("Basic"));
     QQmlApplicationEngine engine;

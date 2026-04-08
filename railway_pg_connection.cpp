@@ -5,16 +5,39 @@
 #include <QtGlobal>
 #include <QSettings>
 #include <QFileInfo>
+#include <QCoreApplication>
+#include <QDir>
+#include <QDebug>
 
 static const char kConnName[] = "railway";
 static QString s_lastError;
 
 static QString readConfigValue(const QString &key, const QString &defaultValue = QString())
 {
-    QString configPath = QStringLiteral("railway_debug_pg.ini");
-    QFileInfo fi(configPath);
-    if (!fi.exists())
+    // 尝试多个相对路径查找配置文件
+    QStringList searchPaths;
+    
+    // 1. 当前工作目录
+    searchPaths << "railway_debug_pg.ini";
+    
+    // 2. 可执行文件所在目录
+    searchPaths << QCoreApplication::applicationDirPath() + "/railway_debug_pg.ini";
+    
+    // 3. 可执行文件上一级目录(适配 build 目录)
+    searchPaths << QCoreApplication::applicationDirPath() + "/../railway_debug_pg.ini";
+    
+    QString configPath;
+    for (const QString &path : searchPaths) {
+        QFileInfo fi(path);
+        if (fi.exists()) {
+            configPath = fi.absoluteFilePath();
+            break;
+        }
+    }
+    
+    if (configPath.isEmpty()) {
         return defaultValue;
+    }
 
     QSettings settings(configPath, QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("postgres"));
@@ -25,10 +48,20 @@ static QString readConfigValue(const QString &key, const QString &defaultValue =
 
 bool railwayPgTryOpenFromEnvironment()
 {
+    // 检查连接是否已存在且打开
     if (QSqlDatabase::contains(QLatin1String(kConnName))) {
         QSqlDatabase existing = QSqlDatabase::database(QLatin1String(kConnName), false);
-        if (existing.isOpen())
+        if (existing.isOpen()) {
+            // 连接已存在且打开,直接返回成功
+            s_lastError.clear();
             return true;
+        }
+        // 连接存在但未打开,需要删除重建
+        // 关键:先让对象超出作用域,再删除数据库
+        {
+            QSqlDatabase temp = QSqlDatabase::database(QLatin1String(kConnName));
+            temp.close();
+        } // temp 对象销毁
         QSqlDatabase::removeDatabase(QLatin1String(kConnName));
     }
 
@@ -51,23 +84,37 @@ bool railwayPgTryOpenFromEnvironment()
     }
 
     if (host.isEmpty() || user.isEmpty()) {
-        s_lastError = QStringLiteral("未设置 PGHOST / PGUSER（或数据库已关闭）");
+        s_lastError = QStringLiteral("未设置 PGHOST / PGUSER(或数据库已关闭)");
         return false;
     }
+
+    qDebug() << "[数据库] 尝试连接:" << host << ":" << port;
+    qDebug() << "[数据库] 数据库:" << dbname << "用户:" << user;
+    qDebug() << "[数据库] SSL模式:" << sslmode;
 
     db.setHostName(host);
     db.setPort(port.toInt());
     db.setDatabaseName(dbname);
     db.setUserName(user);
     db.setPassword(pass);
-    db.setConnectOptions(QStringLiteral("sslmode=%1").arg(sslmode));
+    
+    // 完整的连接选项:SSL + 心跳保活机制
+    QString connectOpts = QStringLiteral("sslmode=%1;keepalives=1;keepalives_idle=30;keepalives_interval=10;keepalives_count=3")
+                          .arg(sslmode);
+    db.setConnectOptions(connectOpts);
 
     if (!db.open()) {
         s_lastError = db.lastError().text();
+        qDebug() << "[数据库] ❌ 连接失败:" << s_lastError;
+        qDebug() << "[数据库] 详细错误:" << db.lastError().databaseText();
+        qDebug() << "[数据库] 驱动错误:" << db.lastError().driverText();
+        qDebug() << "[数据库] 详细错误:" << db.lastError().databaseText();
+        qDebug() << "[数据库] 驱动错误:" << db.lastError().driverText();
         QSqlDatabase::removeDatabase(QLatin1String(kConnName));
         return false;
     }
     s_lastError.clear();
+    qDebug() << "[数据库] ✅ 连接成功!";
     return true;
 }
 

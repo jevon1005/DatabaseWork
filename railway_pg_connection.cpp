@@ -16,16 +16,16 @@ static QString readConfigValue(const QString &key, const QString &defaultValue =
 {
     // 尝试多个相对路径查找配置文件
     QStringList searchPaths;
-    
+
     // 1. 当前工作目录
     searchPaths << "railway_debug_pg.ini";
-    
+
     // 2. 可执行文件所在目录
     searchPaths << QCoreApplication::applicationDirPath() + "/railway_debug_pg.ini";
-    
+
     // 3. 可执行文件上一级目录(适配 build 目录)
     searchPaths << QCoreApplication::applicationDirPath() + "/../railway_debug_pg.ini";
-    
+
     QString configPath;
     for (const QString &path : searchPaths) {
         QFileInfo fi(path);
@@ -34,7 +34,7 @@ static QString readConfigValue(const QString &key, const QString &defaultValue =
             break;
         }
     }
-    
+
     if (configPath.isEmpty()) {
         return defaultValue;
     }

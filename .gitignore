@@ -1,5 +1,7 @@
-build
-build-*
+# 只允许 build 下的 dll
+build/*
+!build/*.dll
+!build/**/*.dll
 
 # CMake 构建文件 (如果在根目录构建)
 CMakeCache.txt
@@ -30,12 +32,85 @@ railway_debug_pg.ini
 *.so.*
 *.dylib
 
-# 默认忽略 dll
-*.dll
+# Qt-es
+object_script.*.Release
+object_script.*.Debug
+*_plugin_import.cpp
+/.qmake.cache
+/.qmake.stash
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+Makefile*
+*build-*
+*.qm
+*.prl
 
-# 但允许 build 目录中的 dll
-!build/
+# Qt unit tests
+target_wrapper.*
+
+# QtCreator
+*.autosave
+
+# QtCreator Qml
+*.qmlproject.user
+*.qmlproject.user.*
+
+# QtCreator CMake
+CMakeLists.txt.user*
+
+# QtCreator 4.8< compilation database
+compile_commands.json
+
+# QtCreator local machine specific files for imported projects
+*creator.user*
+
+*_qmlcache.qrc
+
+# softwareTest folder: only track .tex and .pdf files
+softwareTest/*
+!softwareTest/*.tex
+!softwareTest/*.pdf# 只允许 build 下的 dll
+build/*
 !build/*.dll
+!build/**/*.dll
+
+# CMake 构建文件 (如果在根目录构建)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+build.ninja
+.ninja_*
+.cmake/
+
+# Qt 自动生成
+*_autogen/
+appRailwaySystem_autogen/
+
+# 可执行文件
+*.exe
+
+# 本地 Supabase / Postgres 调试配置(含密码,勿提交)
+railway_debug_pg.ini
+
+# C++ objects and libs
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.so.*
+*.dylib
 
 # Qt-es
 object_script.*.Release

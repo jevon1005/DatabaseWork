@@ -1,3 +1,0 @@
-set(__QT_DEPLOY_TARGET_appRailwaySystem_FILE D:/study/DatabaseWork/build/appRailwaySystem.exe)
-set(__QT_DEPLOY_TARGET_appRailwaySystem_TYPE EXECUTABLE)
-set(__QT_DEPLOY_TARGET_appRailwaySystem_RUNTIME_DLLS D:/Qt/6.9.3/mingw_64/bin/Qt6QuickControls2.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Sql.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Core5Compat.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6QuickTemplates2.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Quick.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6QmlMeta.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6QmlWorkerScript.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6OpenGL.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Gui.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6QmlModels.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Qml.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Network.dll;D:/Qt/6.9.3/mingw_64/bin/Qt6Core.dll)

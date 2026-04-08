@@ -28,8 +28,14 @@ railway_debug_pg.ini
 *.lai
 *.so
 *.so.*
-*.dll
 *.dylib
+
+# 默认忽略 dll
+*.dll
+
+# 但允许 build 目录中的 dll
+!build/
+!build/*.dll
 
 # Qt-es
 object_script.*.Release

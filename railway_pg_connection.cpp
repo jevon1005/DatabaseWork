@@ -14,28 +14,25 @@ static QString s_lastError;
 
 static QString readConfigValue(const QString &key, const QString &defaultValue = QString())
 {
-    // 尝试多个相对路径查找配置文件
     QStringList searchPaths;
-
-    // 1. 当前工作目录
     searchPaths << "railway_debug_pg.ini";
-
-    // 2. 可执行文件所在目录
     searchPaths << QCoreApplication::applicationDirPath() + "/railway_debug_pg.ini";
-
-    // 3. 可执行文件上一级目录(适配 build 目录)
     searchPaths << QCoreApplication::applicationDirPath() + "/../railway_debug_pg.ini";
 
     QString configPath;
     for (const QString &path : searchPaths) {
         QFileInfo fi(path);
+        qDebug() << "[配置] 正在查找文件:" << fi.absoluteFilePath() << " 是否存在:" << fi.exists();
+
         if (fi.exists()) {
             configPath = fi.absoluteFilePath();
+            qDebug() << "[配置] 成功找到配置文件:" << configPath;
             break;
         }
     }
 
     if (configPath.isEmpty()) {
+        qDebug() << "[配置] 警告: 未找到任何配置文件!";
         return defaultValue;
     }
 

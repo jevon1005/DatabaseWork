@@ -1,0 +1,127 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{rotating}
+\usepackage[inkscapelatex=false]{svg}
+
+\renewcommand{\lstlistingname}{代码}
+
+\begin{document}
+	\begin{center}
+		{\LARGE 高铁订票管理系统总体设计}
+	\end{center}
+	
+	\vspace{1cm}
+	
+	\tableofcontents
+	\newpage
+	
+	\section{系统总体设计}
+	
+	\subsection{架构设计}
+	系统采用分层架构实现“界面、逻辑、数据”解耦，技术栈为 C++/Qt + QML + JavaScript，并使用 MySQL 作为持久化数据库。
+	
+	\begin{itemize}
+		\item \textbf{界面层（QML）}：负责页面布局、组件展示、用户输入与交互反馈。
+		\item \textbf{前端逻辑层（JavaScript）}：负责页面状态组织、参数拼装、调用后端接口、处理返回结果并驱动界面刷新。
+		\item \textbf{业务服务层（C++）}：承载核心业务规则（查询、下单、取消、改签、校验等），对外提供统一可调用接口。
+		\item \textbf{数据访问层（C++）}：负责与 MySQL 的连接管理、SQL 执行与事务控制，向上屏蔽数据库细节。
+		\item \textbf{数据存储层（MySQL）}：存储用户、乘车人、车次、时刻表、座位库存、订单等核心业务数据。
+	\end{itemize}
+	
+	系统按业务域划分模块：
+	\begin{itemize}
+		\item \textbf{账号与权限模块}：用户/管理员认证、权限校验、账号状态管理。
+		\item \textbf{基础数据模块}：城市、车站、车次、车厢配置、时刻表等数据维护与查询。
+		\item \textbf{乘车人模块}：乘车人信息管理及与用户的归属关系校验。
+		\item \textbf{订单模块}：下单、订单查询、取消与改签、订单状态流转。
+		\item \textbf{库存与余票模块}：余票计算、库存扣减与释放策略，与订单流程通过事务协作保证一致性。
+	\end{itemize}
+	
+	系统启动时将核心业务对象注入 QML 上下文，QML/JS 以函数调用方式触发业务逻辑。后端对外提供统一接口，接口返回统一结果结构，包含 \texttt{success}、\texttt{message}，必要时携带 \texttt{data}（列表/对象）。需要自动刷新的数据通过属性暴露与信号通知触发界面更新。
+	
+	\subsection{前端开发架构}
+	前端采用“页面（Pages）+ 组件（Components）+ 状态（State）”的组织方式，强调可复用、可维护与低耦合。
+	\begin{itemize}
+		\item \textbf{Pages}：按业务场景拆分页面，如登录、车次查询、下单确认、订单列表、乘车人管理、个人中心、管理员维护等。
+		\item \textbf{Components}：抽取复用控件，如车次条目卡片、订单卡片、乘车人卡片、弹窗对话框、统一按钮、搜索栏、滚动条等，确保风格一致。
+		\item \textbf{State}：维护前端会话状态与页面共享状态（如当前登录用户、查询条件、当前选中车次/乘车人、临时订单信息等），由 JS 统一管理，驱动界面刷新。
+	\end{itemize}
+	
+	前端与后端通过“统一接口 + 统一返回结构”协作：页面触发接口调用，基于返回的 \texttt{success/message/data} 更新 UI 状态；对列表类数据使用模型/数组绑定进行渲染，减少手工刷新代码。
+	
+	\subsection{功能模块框图}
+	系统功能模块关系如下图所示（示意）：
+	\begin{figure}[H]
+		\centering
+		% 可将此处替换为你自己的 SVG/PNG 模块图
+		\fbox{
+			\begin{minipage}{0.9\textwidth}
+				\centering
+				\vspace{0.6cm}
+				用户界面（QML）\\
+				\vspace{0.2cm}
+				$\downarrow$\\
+				前端逻辑（JS）\\
+				\vspace{0.2cm}
+				$\downarrow$\\
+				业务服务（C++）：账号与权限 / 基础数据 / 乘车人 / 订单 / 库存与余票\\
+				\vspace{0.2cm}
+				$\downarrow$\\
+				数据访问（DAO/Repository）\\
+				\vspace{0.2cm}
+				$\downarrow$\\
+				MySQL 数据库
+				\vspace{0.6cm}
+			\end{minipage}
+		}
+		\caption{功能模块框图（示意）}
+	\end{figure}
+	
+	\subsection{功能说明}
+	\begin{itemize}
+		\item \textbf{登录与权限}：用户/管理员登录，后端校验账号状态与权限，决定可访问功能范围。
+		\item \textbf{车次与余票查询}：按出发站、到达站、日期查询可用车次，并返回对应席别余票信息。
+		\item \textbf{乘车人管理}：支持乘车人信息新增、修改、删除与列表展示，并校验其归属关系。
+		\item \textbf{下单购票}：用户选择车次、区间与乘车人后提交订单，后端完成校验、扣减库存并生成订单。
+		\item \textbf{订单管理}：展示订单列表与详情，支持取消与改签，订单状态随操作与规则流转。
+		\item \textbf{管理员维护}：维护基础数据（如城市、车站、车次、时刻表、车厢配置等），保证业务数据完整性。
+	\end{itemize}
+	
+	\subsection{流程设计}
+	\textbf{车次查询与余票查询流程}：用户输入出发站、到达站、出发日期等条件；前端发起查询请求；后端查询车次与时刻表，并结合库存与订单信息计算余票；返回车次列表与余票信息，界面以列表形式展示。
+	\begin{figure}[H]
+		\centering
+		\includesvg[width=0.7\textwidth]{活动图-系统.svg}
+		\caption{活动图-系统}
+	\end{figure}
+	
+	\textbf{下单购票流程}：用户选择车次、区间，并选择乘车人；前端提交下单请求；后端执行关键校验；在数据库事务中完成库存扣减与订单创建；返回订单结果并刷新订单列表/详情展示。
+	\begin{figure}[H]
+		\centering
+		\includesvg[width=0.7\textwidth]{活动图-预订车票.svg}
+		\caption{活动图-预订车票}
+	\end{figure}
+	
+	\textbf{取消/改签流程}：用户在订单列表中选择订单并发起取消或改签；后端校验订单状态与规则；在事务中更新订单状态，并释放或调整库存；返回处理结果并刷新订单状态展示。
+	\begin{figure}[H]
+		\centering
+		\includesvg[width=0.7\textwidth]{活动图-修改乘车人信息.svg}
+		\caption{活动图-修改乘车人信息}
+	\end{figure}
+	
+	\subsection{关键技术}
+	\begin{itemize}
+		\item \textbf{Qt/QML 架构}：QML 负责界面与交互，C++ 承担业务处理，通过上下文注入与可调用接口完成联动。
+		\item \textbf{JavaScript 前端逻辑}：负责页面状态管理、接口调用与返回数据处理，配合属性绑定实现数据驱动刷新。
+		\item \textbf{MySQL 持久化}：通过数据访问层封装数据库操作，支持复杂查询、索引优化与数据一致性保障。
+		\item \textbf{事务与一致性控制}：下单/取消/改签等关键写操作通过事务保证一致性，并对库存更新采用安全的并发控制策略。
+		\item \textbf{统一返回结构}：接口统一使用结构化返回（如 QVariantMap：\texttt{success/message/data}），便于前端统一处理与错误提示。
+	\end{itemize}
+	
+\end{document}

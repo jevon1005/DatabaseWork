@@ -76,24 +76,25 @@ void DataLoader::run()
         return;
     }
     
-    // 创建子线程专用连接
-    QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"), threadConnName);
-    db.setHostName(host);
-    db.setPort(port.toInt());
-    db.setDatabaseName(dbname);
-    db.setUserName(user);
-    db.setPassword(pass);
-    
-    QString connectOpts = QStringLiteral("sslmode=%1;keepalives=1;keepalives_idle=30;keepalives_interval=10;keepalives_count=3")
-                          .arg(sslmode);
-    db.setConnectOptions(connectOpts);
-    
-    if (!db.open()) {
-        qWarning() << "子线程:数据库连接失败:" << db.lastError().text();
-        QSqlDatabase::removeDatabase(threadConnName);
-        emit loadFinished();
-        return;
-    }
+    // 使用作用域确保数据库对象在删除前完全销毁
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"), threadConnName);
+        db.setHostName(host);
+        db.setPort(port.toInt());
+        db.setDatabaseName(dbname);
+        db.setUserName(user);
+        db.setPassword(pass);
+        
+        QString connectOpts = QStringLiteral("sslmode=%1;keepalives=1;keepalives_idle=30;keepalives_interval=10;keepalives_count=3")
+                              .arg(sslmode);
+        db.setConnectOptions(connectOpts);
+        
+        if (!db.open()) {
+            qWarning() << "子线程:数据库连接失败:" << db.lastError().text();
+            QSqlDatabase::removeDatabase(threadConnName);
+            emit loadFinished();
+            return;
+        }
 
     // 加载车站信息
     emit progressUpdated(10, "正在加载车站信息...");
@@ -125,14 +126,13 @@ void DataLoader::run()
         m_orderManager->loadFromPostgres(db);
     }
 
-    // 完成加载
-    emit progressUpdated(100, "加载完成");
+        // 完成加载
+        emit progressUpdated(100, "加载完成");
+        
+        db.close();
+    } // db 对象在此销毁
     
-    // 关闭并删除子线程连接(关键:让 db 对象先销毁)
-    {
-        QSqlDatabase tempDb = db;
-        tempDb.close();
-    } // tempDb 销毁
+    // 所有数据库对象销毁后才删除连接
     QSqlDatabase::removeDatabase(threadConnName);
     
     emit loadFinished();

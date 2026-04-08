@@ -4,6 +4,8 @@
     </qresource>
     <qresource prefix="/">
         <file>qml/main.qml</file>
+        <file>qml/Splash.qml</file>
+        <file>qml/SessionState.qml</file>
         <file>qml/components/SideBar.qml</file>
         <file>qml/pages/PassengerInfo.qml</file>
         <file>qml/pages/TicketQuery.qml</file>

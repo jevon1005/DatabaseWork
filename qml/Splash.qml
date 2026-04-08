@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import MyApp 1.0
 
 ApplicationWindow {
     id: splashWindow
@@ -11,25 +12,54 @@ ApplicationWindow {
     flags: Qt.FramelessWindowHint
     color: "#f0f0f0"
 
+    // 背景图片层
+    Rectangle {
+        anchors.fill: parent
+        color: "#f8f8f8"
+        
+        Image {
+            anchors.fill: parent
+            source: "qrc:/images/resources/images/logbackground.png"
+            fillMode: Image.PreserveAspectCrop
+            opacity: 0.15
+        }
+    }
+
+    // 前景内容层
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
+        anchors.margins: 40
         spacing: 20
 
-        Image {
-            id: logo
-            source: "qrc:/images/logbackground.png"
-            width: 200
-            height: 200
+        // 顶部弹簧,将内容向下推
+        Item {
+            Layout.fillHeight: true
+            Layout.preferredHeight: 20
+        }
+
+        // Logo 图标区域(如果有单独的 logo,可以替换)
+        Rectangle {
+            Layout.preferredWidth: 120
+            Layout.preferredHeight: 120
             Layout.alignment: Qt.AlignHCenter
+            radius: 60
+            color: "#409CFC"
+            
+            Text {
+                anchors.centerIn: parent
+                text: "🚄"
+                font.pixelSize: 60
+                color: "white"
+            }
         }
 
         Text {
             text: "高铁订票系统"
-            font.pixelSize: 24
+            font.pixelSize: 28
             font.bold: true
             Layout.alignment: Qt.AlignHCenter
-            color: "#333"
+            color: "#2c3e50"
+            font.family: "Microsoft YaHei"
         }
 
         Text {
@@ -37,7 +67,8 @@ ApplicationWindow {
             text: "正在初始化..."
             font.pixelSize: 16
             Layout.alignment: Qt.AlignHCenter
-            color: "#666"
+            color: "#7f8c8d"
+            font.family: "Microsoft YaHei"
         }
 
         ProgressBar {
@@ -45,17 +76,17 @@ ApplicationWindow {
             value: 0
             from: 0
             to: 1
-            width: parent.width * 0.8
+            Layout.preferredWidth: 400
+            Layout.preferredHeight: 8
             Layout.alignment: Qt.AlignHCenter
             background: Rectangle {
-                color: "#e0e0e0"
+                color: "#ecf0f1"
                 radius: 4
             }
             contentItem: Rectangle {
-                color: "#4CAF50"
+                color: "#409CFC"
                 radius: 4
-                width: progressBar.width * progressBar.value
-                height: progressBar.height
+                width: progressBar.visualPosition * progressBar.width
             }
         }
 
@@ -64,7 +95,14 @@ ApplicationWindow {
             text: "0%"
             font.pixelSize: 14
             Layout.alignment: Qt.AlignHCenter
-            color: "#666"
+            color: "#95a5a6"
+            font.family: "Microsoft YaHei"
+        }
+
+        // 底部弹簧,保持布局居中
+        Item {
+            Layout.fillHeight: true
+            Layout.preferredHeight: 40
         }
     }
 

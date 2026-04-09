@@ -10,6 +10,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QVariant>
+#include <QStringList>
 
 AccountManager::AccountManager(QObject *parent) : QObject{parent} {
     // 数据将通过DataLoader多线程加载
@@ -20,12 +21,12 @@ void AccountManager::initializeData() {
     if (users.empty() && admins.empty()) {
         qDebug() << "[账号] 云端为空，开始从本地加载并自动迁移至云端...";
         readFromFile("../../data/user.txt", "../../data/admin.txt");
-        if (railwayPgIsOpen()) saveToPostgres();
+        if (railwayPgCanWriteImmediately()) saveToPostgres();
     }
 }
 
 AccountManager::~AccountManager() {
-    if (!railwayPgIsOpen()) writeToFile("../../data/user.txt", "../../data/admin.txt");
+    saveToLocalCache();
 }
 
 QVariantMap AccountManager::loginUser_api(const QString &username, const QString &password) {
@@ -86,7 +87,8 @@ QVariantMap AccountManager::lockUser_api(const QString &username) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             it->lock();
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE users SET locked = true WHERE username = ?");
@@ -104,7 +106,8 @@ QVariantMap AccountManager::lockAdmin_api(const QString &username) {
     for (auto it = admins.begin(); it != admins.end(); it++) {
         if (it->getUsername() == username) {
             it->lock();
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE admins SET locked = true WHERE username = ?");
@@ -122,7 +125,8 @@ QVariantMap AccountManager::unlockUser_api(const QString &username) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             it->unlock();
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE users SET locked = false WHERE username = ?");
@@ -140,7 +144,8 @@ QVariantMap AccountManager::unlockAdmin_api(const QString &username) {
     for (auto it = admins.begin(); it != admins.end(); it++) {
         if (it->getUsername() == username) {
             it->unlock();
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE admins SET locked = false WHERE username = ?");
@@ -163,7 +168,8 @@ QVariantMap AccountManager::editUserProfile_api(const QString &username, const Q
         if (it->getUsername() == username) {
             UserProfile userProfile(name, phoneNumber, id);
             it->setProfile(userProfile);
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE users SET full_name = ?, phone = ?, id_card = ? WHERE username = ?");
@@ -195,7 +201,8 @@ QVariantMap AccountManager::registerUser_api(QVariantMap info) {
     UserProfile profile(name, phoneNumber, id);
     User user(profile, false, username, password);
     users.push_back(user);
-    if (railwayPgIsOpen()) {
+    m_dirty = true;
+    if (railwayPgCanWriteImmediately()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
         QSqlQuery q(db);
         q.prepare("INSERT INTO users (username, password, locked, full_name, phone, id_card) VALUES (?,?,?,?,?,?)");
@@ -212,7 +219,8 @@ QVariantMap AccountManager::resetPassword_api(QVariantMap info) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             it->setPassword(password);
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE users SET password = ? WHERE username = ?");
@@ -225,7 +233,8 @@ QVariantMap AccountManager::resetPassword_api(QVariantMap info) {
     for (auto it = admins.begin(); it != admins.end(); it++) {
         if (it->getUsername() == username) {
             it->setPassword(password);
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE admins SET password = ? WHERE username = ?");
@@ -243,7 +252,8 @@ bool AccountManager::deleteUser(const QString &username) {
         if (it->getUsername() == username) {
             users.erase(it);
             // 实时同步删除操作到数据库
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("DELETE FROM users WHERE username = ?");
@@ -312,6 +322,7 @@ void AccountManager::loadFromPostgres(QSqlDatabase &db) {
             admins.push_back(admin);
         }
     }
+    m_dirty = false;
 }
 
 void AccountManager::saveToPostgres() {
@@ -322,18 +333,70 @@ void AccountManager::saveToPostgres() {
     if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
     if (!db.transaction()) return;
 
+    QStringList localUsernames;
+    localUsernames.reserve(static_cast<qsizetype>(users.size()));
+    QStringList localAdminNames;
+    localAdminNames.reserve(static_cast<qsizetype>(admins.size()));
+
     for (User &user : users) {
         QSqlQuery q(db);
         q.prepare("INSERT INTO users (username, password, locked, full_name, phone, id_card) VALUES (?,?,?,?,?,?) "
                   "ON CONFLICT (username) DO UPDATE SET password = EXCLUDED.password, locked = EXCLUDED.locked, full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, id_card = EXCLUDED.id_card");
         q.addBindValue(user.getUsername()); q.addBindValue(user.getPassword()); q.addBindValue(user.isLocked()); q.addBindValue(user.getProfile().getName()); q.addBindValue(user.getProfile().getPhoneNumber()); q.addBindValue(user.getProfile().getId());
         if (!q.exec()) { db.rollback(); return; }
+        QString escaped = user.getUsername();
+        escaped.replace("'", "''");
+        localUsernames << escaped;
     }
     for (Admin &admin : admins) {
         QSqlQuery q(db);
         q.prepare("INSERT INTO admins (username, password, locked) VALUES (?,?,?) ON CONFLICT (username) DO UPDATE SET password = EXCLUDED.password, locked = EXCLUDED.locked");
         q.addBindValue(admin.getUsername()); q.addBindValue(admin.getPassword()); q.addBindValue(admin.isLocked());
         if (!q.exec()) { db.rollback(); return; }
+        QString escaped = admin.getUsername();
+        escaped.replace("'", "''");
+        localAdminNames << escaped;
+    }
+
+    if (localUsernames.isEmpty()) {
+        QSqlQuery qDeleteUsers(db);
+        if (!qDeleteUsers.exec("DELETE FROM users")) { db.rollback(); return; }
+    } else {
+        QSqlQuery qDeleteUsers(db);
+        const QString sql = QString("DELETE FROM users WHERE username NOT IN ('%1')").arg(localUsernames.join("','"));
+        if (!qDeleteUsers.exec(sql)) { db.rollback(); return; }
+    }
+
+    if (localAdminNames.isEmpty()) {
+        QSqlQuery qDeleteAdmins(db);
+        if (!qDeleteAdmins.exec("DELETE FROM admins")) { db.rollback(); return; }
+    } else {
+        QSqlQuery qDeleteAdmins(db);
+        const QString sql = QString("DELETE FROM admins WHERE username NOT IN ('%1')").arg(localAdminNames.join("','"));
+        if (!qDeleteAdmins.exec(sql)) { db.rollback(); return; }
     }
     db.commit();
+    m_dirty = false;
+}
+
+bool AccountManager::loadFromLocalCache() {
+    users.clear();
+    admins.clear();
+    readFromFile("../../data/user.txt", "../../data/admin.txt");
+    m_dirty = false;
+    return !users.empty() || !admins.empty();
+}
+
+bool AccountManager::saveToLocalCache() const {
+    auto *self = const_cast<AccountManager *>(this);
+    self->writeToFile("../../data/user.txt", "../../data/admin.txt");
+    return true;
+}
+
+bool AccountManager::hasDirtyChanges() const {
+    return m_dirty;
+}
+
+void AccountManager::markClean() {
+    m_dirty = false;
 }

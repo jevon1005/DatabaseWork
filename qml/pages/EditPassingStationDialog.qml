@@ -114,6 +114,9 @@ Window {
                     
                     // 当 stationList 变化时，更新 currentIndex
                     onModelChanged: {
+                        if (!stationList || stationList.length === 0) {
+                            return
+                        }
                         if (stationInfo.stationName !== "") {
                             var index = stationList.indexOf(stationInfo.stationName)
                             if (index !== -1) {
@@ -121,6 +124,10 @@ Window {
                                 currentIndex = index
                                 updating = false
                             }
+                        } else if (currentIndex < 0) {
+                            updating = true
+                            currentIndex = 0
+                            updating = false
                         }
                     }
                     
@@ -310,8 +317,18 @@ Window {
                     height: 24
                     width: 90
                     fontSize:14
-                    onClicked: confirmed({
-                        stationName: stationList[stationNameCombo.currentIndex],
+                    onClicked: {
+                        var selectedName = ""
+                        if (stationNameCombo.currentIndex >= 0 && stationNameCombo.currentIndex < stationList.length) {
+                            selectedName = stationList[stationNameCombo.currentIndex]
+                        } else if (stationNameCombo.currentText !== undefined && stationNameCombo.currentText !== null) {
+                            selectedName = stationNameCombo.currentText
+                        } else if (stationInfo.stationName !== undefined && stationInfo.stationName !== null) {
+                            selectedName = stationInfo.stationName
+                        }
+                        selectedName = ("" + selectedName).trim()
+                        confirmed({
+                        stationName: selectedName,
                         arriveHour: arriveHourField.text === "" ? "" : parseInt(arriveHourField.text),
                         arriveMinute: arriveMinuteField.text === "" ? "" : parseInt(arriveMinuteField.text),
                         arriveDay: arriveDayField.text === "" ? "" : parseInt(arriveDayField.text),
@@ -319,6 +336,7 @@ Window {
                         departureMinute: departureMinuteField.text === "" ? "" : parseInt(departureMinuteField.text),
                         departureDay: departureDayField.text === "" ? "" : parseInt(departureDayField.text)
                     })
+                    }
                 }
 
                 Item { Layout.fillWidth: true }

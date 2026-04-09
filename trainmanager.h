@@ -38,8 +38,13 @@ public:
     void loadFromPostgres();
     void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
+    bool loadFromLocalCache();
+    bool saveToLocalCache() const;
+    bool hasDirtyChanges() const;
+    void markClean();
 
 private:
+    bool m_dirty = false;
     bool readFromFile(const char filename[]);
     bool writeToFile(const char filename[]);
 

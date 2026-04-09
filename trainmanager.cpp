@@ -9,6 +9,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QStringList>
 
 TrainManager::TrainManager(QObject *parent) : QObject{parent} {
     // 数据将通过DataLoader多线程加载
@@ -19,12 +20,12 @@ void TrainManager::initializeData() {
     if (trains.empty()) {
         qDebug() << "[列车] 云端为空或解析失败，开始从本地txt加载并重置云端...";
         readFromFile("../../data/train.txt");
-        if (railwayPgIsOpen()) saveToPostgres();
+        if (railwayPgCanWriteImmediately()) saveToPostgres();
     }
 }
 
 TrainManager::~TrainManager() {
-    if (!railwayPgIsOpen()) writeToFile("../../data/train.txt");
+    saveToLocalCache();
 }
 
 QVariantList TrainManager::getTrains_api() {
@@ -54,7 +55,8 @@ QVariantMap TrainManager::deleteTrain_api(const QString &trainNumber) {
     for (auto it = trains.begin(); it != trains.end(); it++) {
         if (it->getNumber() == trainNumber) {
             trains.erase(it);
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("DELETE FROM trains WHERE train_number = ?");
@@ -97,7 +99,8 @@ QVariantMap TrainManager::updateTimetableAndTrainNumberByTrainNumber(const QStri
     if (oldTrainNumber == "") {
         if (getTrainByTrainNumber(newTrainNumber)) { result["success"] = false; return result; }
         Train newTrain; newTrain.setNumber(newTrainNumber); newTrain.setTimetable(timetable); trains.push_back(newTrain);
-        if (railwayPgIsOpen()) {
+        m_dirty = true;
+        if (railwayPgCanWriteImmediately()) {
             QSqlDatabase db = QSqlDatabase::database("railway", false);
             std::tuple<Station, Time> sInfo = newTrain.getTimetable().getStartStationInfo();
             std::tuple<Station, Time> eInfo = newTrain.getTimetable().getEndStationInfo();
@@ -119,7 +122,8 @@ QVariantMap TrainManager::updateTimetableAndTrainNumberByTrainNumber(const QStri
     for (auto &train : trains) {
         if (train.getNumber() == oldTrainNumber) {
             train.setTimetable(timetable); train.setNumber(newTrainNumber);
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 std::tuple<Station, Time> sInfo = train.getTimetable().getStartStationInfo();
                 std::tuple<Station, Time> eInfo = train.getTimetable().getEndStationInfo();
@@ -146,7 +150,8 @@ QVariantMap TrainManager::updateSeatTemplateByTrainNumber(const QString &trainNu
     for (auto it = trains.begin(); it != trains.end(); it++) {
         if (it->getNumber() == trainNumber) {
             it->setCarriages(carriages);
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 std::tuple<Station, Time> sInfo = it->getTimetable().getStartStationInfo();
                 std::tuple<Station, Time> eInfo = it->getTimetable().getEndStationInfo();
@@ -209,6 +214,7 @@ void TrainManager::loadFromPostgres(QSqlDatabase &db) {
             trains.push_back(tr);
         }
     }
+    m_dirty = false;
 }
 
 void TrainManager::saveToPostgres() {
@@ -217,6 +223,9 @@ void TrainManager::saveToPostgres() {
 
     QSqlQuery ping(db); if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
     if (!db.transaction()) return;
+
+    QStringList localTrainNumbers;
+    localTrainNumbers.reserve(static_cast<qsizetype>(trains.size()));
 
     for (Train &train : trains) {
         std::tuple<Station, Time> sInfo = train.getTimetable().getStartStationInfo();
@@ -236,6 +245,39 @@ void TrainManager::saveToPostgres() {
         q.prepare("INSERT INTO trains (train_number, start_station_id, end_station_id, seat_config) VALUES (?,?,?,?) ON CONFLICT (train_number) DO UPDATE SET start_station_id = EXCLUDED.start_station_id, end_station_id = EXCLUDED.end_station_id, seat_config = EXCLUDED.seat_config");
         q.addBindValue(train.getNumber()); q.addBindValue(sid0); q.addBindValue(sid1); q.addBindValue(cfg);
         if (!q.exec()) { db.rollback(); return; }
+        QString escaped = train.getNumber();
+        escaped.replace("'", "''");
+        localTrainNumbers << escaped;
+    }
+
+    if (localTrainNumbers.isEmpty()) {
+        QSqlQuery qDelete(db);
+        if (!qDelete.exec("DELETE FROM trains")) { db.rollback(); return; }
+    } else {
+        QSqlQuery qDelete(db);
+        const QString sql = QString("DELETE FROM trains WHERE train_number NOT IN ('%1')").arg(localTrainNumbers.join("','"));
+        if (!qDelete.exec(sql)) { db.rollback(); return; }
     }
     db.commit();
+    m_dirty = false;
+}
+
+bool TrainManager::loadFromLocalCache() {
+    trains.clear();
+    const bool ok = readFromFile("../../data/train.txt");
+    m_dirty = false;
+    return ok;
+}
+
+bool TrainManager::saveToLocalCache() const {
+    auto *self = const_cast<TrainManager *>(this);
+    return self->writeToFile("../../data/train.txt");
+}
+
+bool TrainManager::hasDirtyChanges() const {
+    return m_dirty;
+}
+
+void TrainManager::markClean() {
+    m_dirty = false;
 }

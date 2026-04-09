@@ -1,4 +1,3 @@
-2 2 0
 admin admin 0
 admin1 123 0
 superadmin admin@2024 1

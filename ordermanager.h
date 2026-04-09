@@ -45,6 +45,8 @@ public:
     bool rescheduleOrder(const QString &orderNumber);
     // 输入乘车人，判断该乘车人有无待乘坐订单（用于乘车人修改前判断）
     bool hasUnusedOrderForPassenger(const QString &username, const QString &passengerId);
+    // 判断某乘车人是否存在任意历史订单（用于删除前数据库外键安全检查）
+    bool hasAnyOrderForPassenger(const QString &username, const QString &passengerId);
     // 删除某一用户的所有订单（用于用户注销）
     bool deleteOrdersByUsername(const QString &username);
     // 判断某个车次是否有待乘坐订单
@@ -53,8 +55,13 @@ public:
     void loadFromPostgres();
     void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
+    bool loadFromLocalCache();
+    bool saveToLocalCache() const;
+    bool hasDirtyChanges() const;
+    void markClean();
 
 private:
+    bool m_dirty = false;
     TrainManager *m_trainManager = nullptr;
     std::vector<Order> getOrdersByUsername(const QString &username);
     bool cancelOrder(const QString &orderNumber);

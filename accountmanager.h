@@ -50,8 +50,13 @@ public:
     void loadFromPostgres();
     void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
+    bool loadFromLocalCache();
+    bool saveToLocalCache() const;
+    bool hasDirtyChanges() const;
+    void markClean();
 
 private:
+    bool m_dirty = false;
     std::optional<Admin> findAdminByUsername(const QString &username);
     std::optional<User> findUserById(const QString &id);
     void readFromFileUser(const char filename[]);

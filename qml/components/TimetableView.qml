@@ -25,6 +25,7 @@ Item {
     ]
 
     property bool showButtons: true
+    property var transientParentWindow: null
 
     // 新增：外部可控边框宽度
     property int borderWidth: 1
@@ -469,6 +470,9 @@ Item {
                 //初始化参数
                 item.stationInfo = initialInfo
                 item.stationList = stationList
+                if (transientParentWindow) {
+                    item.transientParent = transientParentWindow
+                }
                 item.visible = true
             }
         }
@@ -478,7 +482,7 @@ Item {
     function refreshPassingStationList(offset = 0) {
         // 记录当前滚动条位置
         var savedContentY = stationListView.contentY
-        passingStationList = passingStationList
+        passingStationList = passingStationList.slice(0)
         // 回到之前记录的位置
         stationListView.contentY = savedContentY + offset
     }
@@ -614,6 +618,8 @@ Item {
         else {
             passingStationList.splice(index, 0, passingStation)
         }
+        // 新增后默认滚动到可见区域，避免“已添加但看不到”
+        stationListView.positionViewAtEnd()
         refreshPassingStationList(offset)
     }
 

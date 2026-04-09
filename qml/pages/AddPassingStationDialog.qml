@@ -78,8 +78,7 @@ Window {
                 ComboBox {
                     id: stationName
                     Layout.preferredWidth: 100
-
-                    model: ["--"].concat(Array.from({length: 24}, (_, i) => i.toString().padStart(2, "0")))
+                    model: stationManager ? stationManager.getAllStationNames_api() : []
                     currentIndex: 0
                     contentItem: Text {
                         text: parent.displayText

@@ -385,9 +385,9 @@ QVariantMap BookingSystem::isPassengerEditable_api(const QVariantMap &info) {
         result["message"] = QString("用户 %1 下的乘车人 %2 不存在！").arg(username, passengerId);
         return result;
     }
-    if (order_manager->hasUnusedOrderForPassenger(username, passengerId)) {
+    if (order_manager->hasAnyOrderForPassenger(username, passengerId)) {
         result["success"] = false;
-        result["message"] = "该乘车人有待乘坐订单，无法修改该乘车人信息！";
+        result["message"] = "该乘车人存在关联订单记录，无法删除或修改！";
         return result;
     }
     result["success"] = true;

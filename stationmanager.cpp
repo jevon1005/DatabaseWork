@@ -20,12 +20,12 @@ void StationManager::initializeData() {
     if (cities.empty() || stations.empty()) {
         qDebug() << "[车站] 云端为空，从本地 txt 加载并自动迁移至云端...";
         readFromFile("../../data/station.txt", "../../data/city.txt");
-        if (railwayPgIsOpen()) saveToPostgres();
+        if (railwayPgCanWriteImmediately()) saveToPostgres();
     }
 }
 
 StationManager::~StationManager() {
-    if (!railwayPgIsOpen()) writeToFile("../../data/station.txt", "../../data/city.txt");
+    saveToLocalCache();
 }
 
 QStringList StationManager::getCitiesName_api() {
@@ -143,6 +143,7 @@ void StationManager::loadFromPostgres(QSqlDatabase &db) {
             stations.push_back(Station(qs.value(0).toString(), qs.value(1).toString()));
         }
     }
+    m_dirty = false;
 }
 
 void StationManager::saveToPostgres() {
@@ -210,4 +211,27 @@ void StationManager::saveToPostgres() {
     }
 
     db.commit();
+    m_dirty = false;
+}
+
+bool StationManager::loadFromLocalCache() {
+    cities.clear();
+    stations.clear();
+    readFromFile("../../data/station.txt", "../../data/city.txt");
+    m_dirty = false;
+    return !cities.empty() || !stations.empty();
+}
+
+bool StationManager::saveToLocalCache() const {
+    auto *self = const_cast<StationManager *>(this);
+    self->writeToFile("../../data/station.txt", "../../data/city.txt");
+    return true;
+}
+
+bool StationManager::hasDirtyChanges() const {
+    return m_dirty;
+}
+
+void StationManager::markClean() {
+    m_dirty = false;
 }

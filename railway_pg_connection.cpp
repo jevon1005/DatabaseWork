@@ -11,6 +11,7 @@
 
 static const char kConnName[] = "railway";
 static QString s_lastError;
+static bool s_deferredSyncEnabled = false;
 
 static QString readConfigValue(const QString &key, const QString &defaultValue = QString())
 {
@@ -124,4 +125,19 @@ bool railwayPgIsOpen()
 QString railwayPgLastError()
 {
     return s_lastError;
+}
+
+void railwayPgSetDeferredSyncEnabled(bool enabled)
+{
+    s_deferredSyncEnabled = enabled;
+}
+
+bool railwayPgDeferredSyncEnabled()
+{
+    return s_deferredSyncEnabled;
+}
+
+bool railwayPgCanWriteImmediately()
+{
+    return railwayPgIsOpen() && !railwayPgDeferredSyncEnabled();
 }

@@ -307,9 +307,15 @@ Page {
     }
 
     function deletePassenger(username, id) {
-        passengerManager.deletePassengerByUsernameAndId_api(username, id)
+        var result = passengerManager.deletePassengerByUsernameAndId_api(username, id)
+        if (result.success !== true) {
+            notification.message = result.message ? result.message : "乘车人删除失败！"
+            notification.source = "qrc:/qml/components/ConfirmDialog.qml"
+            notification.active = true
+            return
+        }
         refreshPassengers(username)
-        notification.message = "乘车人删除成功！"
+        notification.message = result.message ? result.message : "乘车人删除成功！"
         notification.source = "qrc:/qml/components/ConfirmDialog.qml"
         notification.active = true
     }

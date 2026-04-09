@@ -18,6 +18,7 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    railwayPgSetDeferredSyncEnabled(true);
     
     // 使用配置系统连接数据库
     if (!QSqlDatabase::drivers().contains("QPSQL")) {
@@ -46,6 +47,27 @@ int main(int argc, char *argv[])
 
     // 创建DataLoader
     DataLoader* loader = new DataLoader(stationManager, trainManager, accountManager, passengerManager, orderManager);
+
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, [&]() {
+        stationManager->saveToLocalCache();
+        trainManager->saveToLocalCache();
+        accountManager->saveToLocalCache();
+        passengerManager->saveToLocalCache();
+        orderManager->saveToLocalCache();
+
+        if (!railwayPgIsOpen()) {
+            railwayPgTryOpenFromEnvironment();
+        }
+        if (!railwayPgIsOpen()) {
+            qWarning() << "退出同步跳过：云端连接不可用，仅保留本地快照。";
+            return;
+        }
+        if (stationManager->hasDirtyChanges()) stationManager->saveToPostgres();
+        if (accountManager->hasDirtyChanges()) accountManager->saveToPostgres();
+        if (trainManager->hasDirtyChanges()) trainManager->saveToPostgres();
+        if (passengerManager->hasDirtyChanges()) passengerManager->saveToPostgres();
+        if (orderManager->hasDirtyChanges()) orderManager->saveToPostgres();
+    });
 
     // 注册到QML
     engine.rootContext()->setContextProperty("stationManager", stationManager);

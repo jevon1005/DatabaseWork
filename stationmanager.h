@@ -29,8 +29,13 @@ public:
     void loadFromPostgres();
     void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
+    bool loadFromLocalCache();
+    bool saveToLocalCache() const;
+    bool hasDirtyChanges() const;
+    void markClean();
 
 private:
+    bool m_dirty = false;
     void readFromFileStations(const char filename[]);
     void readFromFileCities(const char filename[]);
     void readFromFile(const char filenameStations[], const char filenameCities[]);

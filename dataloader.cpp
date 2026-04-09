@@ -48,6 +48,15 @@ static QString readThreadConfigValue(const QString &key, const QString &defaultV
 
 void DataLoader::run()
 {
+    auto loadLocalSnapshot = [this]() {
+        emit progressUpdated(10, "云端不可用，加载本地快照...");
+        if (m_stationManager) m_stationManager->loadFromLocalCache();
+        if (m_trainManager) m_trainManager->loadFromLocalCache();
+        if (m_accountManager) m_accountManager->loadFromLocalCache();
+        if (m_passengerManager) m_passengerManager->loadFromLocalCache();
+        if (m_orderManager) m_orderManager->loadFromLocalCache();
+        emit progressUpdated(100, "已加载本地快照");
+    };
     // 在子线程中创建独立的数据库连接
     QString threadConnName = QStringLiteral("railway_thread_%1")
                              .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()));
@@ -72,6 +81,7 @@ void DataLoader::run()
     
     if (host.isEmpty() || user.isEmpty()) {
         qWarning() << "子线程:数据库配置未设置,无法加载数据";
+        loadLocalSnapshot();
         emit loadFinished();
         return;
     }
@@ -92,6 +102,7 @@ void DataLoader::run()
         if (!db.open()) {
             qWarning() << "子线程:数据库连接失败:" << db.lastError().text();
             QSqlDatabase::removeDatabase(threadConnName);
+            loadLocalSnapshot();
             emit loadFinished();
             return;
         }
@@ -125,6 +136,13 @@ void DataLoader::run()
     if (m_orderManager) {
         m_orderManager->loadFromPostgres(db);
     }
+
+    // 启动时把云端快照持久化到本地，后续使用本地内存数据提升体验
+    if (m_stationManager) m_stationManager->saveToLocalCache();
+    if (m_trainManager) m_trainManager->saveToLocalCache();
+    if (m_accountManager) m_accountManager->saveToLocalCache();
+    if (m_passengerManager) m_passengerManager->saveToLocalCache();
+    if (m_orderManager) m_orderManager->saveToLocalCache();
 
         // 完成加载
         emit progressUpdated(100, "加载完成");

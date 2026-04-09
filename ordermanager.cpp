@@ -12,6 +12,8 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QHash>
+#include <QStringList>
 
 namespace {
 int lookupUserId(QSqlDatabase &db, const QString &username);
@@ -70,13 +72,13 @@ void OrderManager::initializeData() {
     if (orders.empty()) {
         qDebug() << "[订单] 云端为空，从本地加载并迁移至云端...";
         readFromFile("../../data/order.txt");
-        if (railwayPgIsOpen()) saveToPostgres();
+        if (railwayPgCanWriteImmediately()) saveToPostgres();
     }
     refreshOrderStatus();
 }
 
 OrderManager::~OrderManager() {
-    if (!railwayPgIsOpen()) writeToFile("../../data/order.txt");
+    saveToLocalCache();
 }
 
 QVariantList OrderManager::getOrdersByUsername_api(const QString &username) {
@@ -204,8 +206,9 @@ bool OrderManager::createOrder(Order &order) {
     for (auto o : orders) maxOrderNumberLongLong = std::max(maxOrderNumberLongLong, o.getOrderNumber().toLongLong());
     order.setOrderNumber(QString("%1").arg(maxOrderNumberLongLong + 1, 10, 10, QChar('0')));
     orders.insert(orders.begin(), order);
+    m_dirty = true;
     
-    if (railwayPgIsOpen()) {
+    if (railwayPgCanWriteImmediately()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
         const int uid = lookupUserId(db, order.getUsername());
         const int tid = lookupTrainId(db, order.getTrainNumber());
@@ -259,7 +262,8 @@ bool OrderManager::cancelOrder(const QString &orderNumber) {
     for (auto &order : orders) {
         if (order.getOrderNumber() == orderNumber) {
             order.setStatus("已取消");
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE orders SET status = '已取消' WHERE order_number = ?");
@@ -276,7 +280,8 @@ bool OrderManager::rescheduleOrder(const QString &orderNumber) {
     for (auto &order : orders) {
         if (order.getOrderNumber() == orderNumber) {
             order.setStatus("已改签");
-            if (railwayPgIsOpen()) {
+            m_dirty = true;
+            if (railwayPgCanWriteImmediately()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE orders SET status = '已改签' WHERE order_number = ?");
@@ -293,11 +298,21 @@ bool OrderManager::hasUnusedOrderForPassenger(const QString &username, const QSt
     for (auto order : orders) { if (order.getStatus() == "待乘坐" && order.getPassenger().getUsername() == username && order.getPassenger().getId() == passengerId) return true; } return false;
 }
 
+bool OrderManager::hasAnyOrderForPassenger(const QString &username, const QString &passengerId) {
+    for (auto order : orders) {
+        if (order.getPassenger().getUsername() == username && order.getPassenger().getId() == passengerId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool OrderManager::deleteOrdersByUsername(const QString &username) {
     for (auto it = orders.begin(); it != orders.end();) {
         if (it->getUsername() == username) { it = orders.erase(it); } else { it++; }
     }
-    if (railwayPgIsOpen()) saveToPostgres();
+    m_dirty = true;
+    if (railwayPgCanWriteImmediately()) saveToPostgres();
     return true;
 }
 
@@ -314,7 +329,10 @@ bool OrderManager::refreshOrderStatus() {
             changed = true;
         }
     }
-    if (changed && railwayPgIsOpen()) saveToPostgres();
+    if (changed) {
+        m_dirty = true;
+    }
+    if (changed && railwayPgCanWriteImmediately()) saveToPostgres();
     return true;
 }
 
@@ -387,6 +405,7 @@ void OrderManager::loadFromPostgres(QSqlDatabase &db) {
         Order ord(q.value(0).toString(), trainNum, passenger, q.value(2).toDouble(), d, tt, stStart, stEnd, q.value(4).toString(), q.value(5).toInt(), q.value(6).toInt(), q.value(7).toInt(), q.value(8).toString(), q.value(10).toString());
         orders.push_back(ord);
     }
+    m_dirty = false;
 }
 
 void OrderManager::saveToPostgres() {
@@ -396,14 +415,36 @@ void OrderManager::saveToPostgres() {
     QSqlQuery ping(db); if (!ping.exec("SELECT 1")) { db.close(); db.open(); }
     if (!db.transaction()) return;
 
-    QSqlQuery qDel(db); qDel.exec("DELETE FROM orders");
+    QHash<QString, int> userIdByUsername;
+    QHash<QString, int> trainIdByNumber;
+    QHash<QString, int> passengerIdByIdCard;
+    QHash<QString, int> stationIdByName;
+
+    QSqlQuery qUser(db);
+    if (!qUser.exec("SELECT username, user_id FROM users")) { db.rollback(); return; }
+    while (qUser.next()) userIdByUsername.insert(qUser.value(0).toString(), qUser.value(1).toInt());
+
+    QSqlQuery qTrain(db);
+    if (!qTrain.exec("SELECT train_number, train_id FROM trains")) { db.rollback(); return; }
+    while (qTrain.next()) trainIdByNumber.insert(qTrain.value(0).toString(), qTrain.value(1).toInt());
+
+    QSqlQuery qPassenger(db);
+    if (!qPassenger.exec("SELECT id_number, passenger_id FROM passengers")) { db.rollback(); return; }
+    while (qPassenger.next()) passengerIdByIdCard.insert(qPassenger.value(0).toString(), qPassenger.value(1).toInt());
+
+    QSqlQuery qStation(db);
+    if (!qStation.exec("SELECT station_name, station_id FROM stations")) { db.rollback(); return; }
+    while (qStation.next()) stationIdByName.insert(qStation.value(0).toString(), qStation.value(1).toInt());
+
+    QStringList localOrderNumbers;
+    localOrderNumbers.reserve(static_cast<qsizetype>(orders.size()));
 
     for (Order &o : orders) {
-        const int uid = lookupUserId(db, o.getUsername());
-        const int tid = lookupTrainId(db, o.getTrainNumber());
-        const int pid = lookupPassengerId(db, o.getPassenger().getId());
-        const int sid = lookupStationId(db, o.getStartStation().getStationName());
-        const int eid = lookupStationId(db, o.getEndStation().getStationName());
+        const int uid = userIdByUsername.value(o.getUsername(), -1);
+        const int tid = trainIdByNumber.value(o.getTrainNumber(), -1);
+        const int pid = passengerIdByIdCard.value(o.getPassenger().getId(), -1);
+        const int sid = stationIdByName.value(o.getStartStation().getStationName(), -1);
+        const int eid = stationIdByName.value(o.getEndStation().getStationName(), -1);
 
         // 容错：如果某些外键没找到，跳过该订单以防崩溃
         if (uid < 0 || tid < 0 || pid < 0 || sid < 0 || eid < 0) {
@@ -414,11 +455,53 @@ void OrderManager::saveToPostgres() {
         Timetable ttCopy = o.getTimetable();
         const QString snap = RailwayPgCodec::timetableToStopsJson(ttCopy);
         const QDate td(o.getDate().getYear(), o.getDate().getMonth(), o.getDate().getDay());
+        localOrderNumbers << o.getOrderNumber();
 
         QSqlQuery qi(db);
-        qi.prepare("INSERT INTO orders (order_number, user_id, train_id, passenger_id, start_station_id, end_station_id, seat_level, carriage_number, seat_row, seat_col, price, travel_date, status, timetable_snapshot) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        qi.prepare(
+            "INSERT INTO orders (order_number, user_id, train_id, passenger_id, start_station_id, end_station_id, seat_level, carriage_number, seat_row, seat_col, price, travel_date, status, timetable_snapshot) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+            "ON CONFLICT (order_number) DO UPDATE SET "
+            "user_id = EXCLUDED.user_id, train_id = EXCLUDED.train_id, passenger_id = EXCLUDED.passenger_id, "
+            "start_station_id = EXCLUDED.start_station_id, end_station_id = EXCLUDED.end_station_id, "
+            "seat_level = EXCLUDED.seat_level, carriage_number = EXCLUDED.carriage_number, seat_row = EXCLUDED.seat_row, seat_col = EXCLUDED.seat_col, "
+            "price = EXCLUDED.price, travel_date = EXCLUDED.travel_date, status = EXCLUDED.status, timetable_snapshot = EXCLUDED.timetable_snapshot"
+        );
         qi.addBindValue(o.getOrderNumber()); qi.addBindValue(uid); qi.addBindValue(tid); qi.addBindValue(pid); qi.addBindValue(sid); qi.addBindValue(eid); qi.addBindValue(o.getSeatLevel()); qi.addBindValue(o.getCarriageNumber()); qi.addBindValue(o.getSeatRow()); qi.addBindValue(o.getSeatCol()); qi.addBindValue(o.getPrice()); qi.addBindValue(td); qi.addBindValue(o.getStatus()); qi.addBindValue(snap);
         if (!qi.exec()) { db.rollback(); return; }
     }
+
+    // 删除云端已不存在于本地的订单，避免全表重建
+    if (localOrderNumbers.isEmpty()) {
+        QSqlQuery qClear(db);
+        if (!qClear.exec("DELETE FROM orders")) { db.rollback(); return; }
+    } else {
+        for (QString &n : localOrderNumbers) n.replace("'", "''");
+        QSqlQuery qDelete(db);
+        const QString sql = QString("DELETE FROM orders WHERE order_number NOT IN ('%1')").arg(localOrderNumbers.join("','"));
+        if (!qDelete.exec(sql)) { db.rollback(); return; }
+    }
+
     db.commit();
+    m_dirty = false;
+}
+
+bool OrderManager::loadFromLocalCache() {
+    orders.clear();
+    const bool ok = readFromFile("../../data/order.txt");
+    m_dirty = false;
+    return ok;
+}
+
+bool OrderManager::saveToLocalCache() const {
+    auto *self = const_cast<OrderManager *>(this);
+    return self->writeToFile("../../data/order.txt");
+}
+
+bool OrderManager::hasDirtyChanges() const {
+    return m_dirty;
+}
+
+void OrderManager::markClean() {
+    m_dirty = false;
 }

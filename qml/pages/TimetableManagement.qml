@@ -167,6 +167,7 @@ Window {
                 Layout.rightMargin: 2
                 Layout.topMargin: 4
                 passingStationList: timetable
+                transientParentWindow: timetableManagementWin
             }
 
             Item {

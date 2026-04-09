@@ -11,6 +11,9 @@ class QString;
 bool railwayPgTryOpenFromEnvironment();
 bool railwayPgIsOpen();
 QString railwayPgLastError();
+void railwayPgSetDeferredSyncEnabled(bool enabled);
+bool railwayPgDeferredSyncEnabled();
+bool railwayPgCanWriteImmediately();
 
 // QSqlDatabase 连接名，与 railwayPgTryOpenFromEnvironment 创建的连接一致
 #define RAILWAY_PG_CONN "railway"

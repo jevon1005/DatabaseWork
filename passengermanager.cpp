@@ -5,6 +5,8 @@
 #include <QCoreApplication>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QSqlError>
+#include <QStringList>
 
 PassengerManager::PassengerManager(QObject *parent) : QObject{parent} {
     // 数据将通过DataLoader多线程加载
@@ -15,7 +17,7 @@ void PassengerManager::initializeData() {
     if (passengers.empty()) {
         qDebug() << "[乘车人] 云端为空，从本地 txt 加载并迁移至云端...";
         readFromFile("../../data/passenger.txt");
-        if (railwayPgIsOpen()) saveToPostgres();
+        if (railwayPgCanWriteImmediately()) saveToPostgres();
     }
 }
 
@@ -32,11 +34,21 @@ QVariantMap PassengerManager::deletePassengerByUsernameAndId_api(const QString &
     QVariantMap result;
     for (auto it = passengers.begin(); it != passengers.end(); it++) {
         if (it->getUsername() == username && it->getId() == id) {
+            Passenger backup = *it;
             passengers.erase(it);
             // 实时数据库删除
+            m_dirty = true;
             if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db); q.prepare("DELETE FROM passengers WHERE id_number = ?"); q.addBindValue(id); q.exec();
+                QSqlQuery q(db);
+                q.prepare("DELETE FROM passengers WHERE id_number = ?");
+                q.addBindValue(id);
+                if (!q.exec()) {
+                    passengers.push_back(backup);
+                    result["success"] = false;
+                    result["message"] = QString("云端删除失败：%1").arg(q.lastError().text());
+                    return result;
+                }
             }
             result["success"] = true; result["message"] = "删除成功！"; return result;
         }
@@ -51,6 +63,7 @@ QVariantMap PassengerManager::editPassenger_api(const QString &username, const Q
     for (auto it = passengers.begin(); it != passengers.end(); it++) {
         if (it->getUsername() == username && it->getId() == id_old) {
             it->setName(name); it->setPhoneNumber(phoneNumber); it->setId(id_new); it->setType(type);
+            m_dirty = true;
             if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
@@ -70,6 +83,7 @@ QVariantMap PassengerManager::addPassenger_api(QVariantMap info) {
     if (getPassengerByUsernameAndId(username, id)) { result["success"] = false; result["message"] = "重复"; return result; }
     Passenger passenger(name, phoneNumber, id, type, username);
     passengers.push_back(passenger);
+    m_dirty = true;
     if (railwayPgIsOpen()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
         QSqlQuery qu(db);
@@ -90,6 +104,7 @@ bool PassengerManager::deletePassengersByUsername(const QString &username) {
     for (auto it = passengers.begin(); it != passengers.end();) {
         if (it->getUsername() == username) { it = passengers.erase(it); } else { it++; }
     }
+    m_dirty = true;
     if (railwayPgIsOpen()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
         QSqlQuery q(db); q.prepare("DELETE FROM passengers WHERE user_id = (SELECT user_id FROM users WHERE username = ? LIMIT 1)"); q.addBindValue(username); q.exec();
@@ -125,6 +140,7 @@ void PassengerManager::loadFromPostgres(QSqlDatabase &db) {
     if (q.exec("SELECT u.username, p.name, p.phone, p.id_number, p.passenger_type FROM passengers p JOIN users u ON u.user_id = p.user_id ORDER BY p.passenger_id")) {
         while (q.next()) passengers.push_back(Passenger(q.value(1).toString(), q.value(2).toString(), q.value(3).toString(), q.value(4).toString(), q.value(0).toString()));
     }
+    m_dirty = false;
 }
 
 void PassengerManager::saveToPostgres() {
@@ -142,5 +158,48 @@ void PassengerManager::saveToPostgres() {
         q.addBindValue(uid); q.addBindValue(p.getName()); q.addBindValue(p.getId()); q.addBindValue(p.getPhoneNumber()); q.addBindValue(p.getType());
         if (!q.exec()) { db.rollback(); return; }
     }
+
+    // 清理云端已被本地删除的乘车人
+    if (passengers.empty()) {
+        QSqlQuery qClear(db);
+        if (!qClear.exec("DELETE FROM passengers")) { db.rollback(); return; }
+    } else {
+        QStringList ids;
+        ids.reserve(static_cast<qsizetype>(passengers.size()));
+        for (Passenger &p : passengers) {
+            QString escaped = p.getId();
+            escaped.replace("'", "''");
+            ids << QString("'%1'").arg(escaped);
+        }
+        QSqlQuery qDelete(db);
+        const QString sql = QString(
+            "DELETE FROM passengers p "
+            "WHERE p.id_number NOT IN (%1) "
+            "AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.passenger_id = p.passenger_id)"
+        ).arg(ids.join(","));
+        if (!qDelete.exec(sql)) { db.rollback(); return; }
+    }
+
     db.commit();
+    m_dirty = false;
+}
+
+bool PassengerManager::loadFromLocalCache() {
+    passengers.clear();
+    readFromFile("../../data/passenger.txt");
+    m_dirty = false;
+    return !passengers.empty();
+}
+
+bool PassengerManager::saveToLocalCache() const {
+    auto *self = const_cast<PassengerManager *>(this);
+    return self->writeToFile("../../data/passenger.txt");
+}
+
+bool PassengerManager::hasDirtyChanges() const {
+    return m_dirty;
+}
+
+void PassengerManager::markClean() {
+    m_dirty = false;
 }

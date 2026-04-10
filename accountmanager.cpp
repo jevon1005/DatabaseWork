@@ -355,14 +355,42 @@ bool AccountManager::deleteUser(const QString &username) {
     for (auto it = users.begin(); it != users.end(); it++) {
         if (it->getUsername() == username) {
             users.erase(it);
-            // 实时同步删除操作到数据库
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步删除到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("DELETE FROM users WHERE username = ?");
-                q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    // 先删除用户的所有关联数据
+                    // 删除订单
+                    QSqlQuery deleteOrders(db);
+                    deleteOrders.prepare("DELETE FROM orders WHERE user_id IN "
+                                       "(SELECT user_id FROM users WHERE username = ?)");
+                    deleteOrders.addBindValue(username);
+                    deleteOrders.exec();
+                    
+                    // 删除乘车人
+                    QSqlQuery deletePassengers(db);
+                    deletePassengers.prepare("DELETE FROM passengers WHERE user_id IN "
+                                           "(SELECT user_id FROM users WHERE username = ?)");
+                    deletePassengers.addBindValue(username);
+                    deletePassengers.exec();
+                    
+                    // 删除用户
+                    QSqlQuery q(db);
+                    q.prepare("DELETE FROM users WHERE username = ?");
+                    q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端注销失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步注销用户:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             return true;
         }

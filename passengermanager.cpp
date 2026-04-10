@@ -171,17 +171,30 @@ QVariantMap PassengerManager::addPassenger_api(QVariantMap info) {
     Passenger passenger(name, phoneNumber, id, type, username);
     passengers.push_back(passenger);
     m_dirty = true;
+    
+    // 立即同步到云端
     if (railwayPgIsOpen()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
-        QSqlQuery qu(db);
-        qu.prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1");
-        qu.addBindValue(username);
-        if (qu.exec() && qu.next()) {
-            int uid = qu.value(0).toInt();
-            QSqlQuery q(db);
-            q.prepare("INSERT INTO passengers (user_id, name, id_number, phone, passenger_type) VALUES (?,?,?,?,?)");
-            q.addBindValue(uid); q.addBindValue(name); q.addBindValue(id); q.addBindValue(phoneNumber); q.addBindValue(type);
-            q.exec();
+        if (!db.isOpen()) {
+            railwayPgTryOpenFromEnvironment();
+            db = QSqlDatabase::database("railway", false);
+        }
+        if (db.isOpen()) {
+            QSqlQuery qu(db);
+            qu.prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1");
+            qu.addBindValue(username);
+            if (qu.exec() && qu.next()) {
+                int uid = qu.value(0).toInt();
+                QSqlQuery q(db);
+                q.prepare("INSERT INTO passengers (user_id, name, id_number, phone, passenger_type) VALUES (?,?,?,?,?)");
+                q.addBindValue(uid); q.addBindValue(name); q.addBindValue(id); q.addBindValue(phoneNumber); q.addBindValue(type);
+                if (!q.exec()) {
+                    qWarning() << "[乘车人] 云端添加失败:" << q.lastError().text();
+                } else {
+                    qDebug() << "[乘车人] ✅ 已同步添加乘车人:" << id;
+                    m_dirty = false;
+                }
+            }
         }
     }
     result["success"] = true; result["message"] = "添加成功"; return result;

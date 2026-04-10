@@ -55,6 +55,8 @@ public:
     void loadFromPostgres();
     void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
+    void syncSingleOrderToPostgres(Order &order); // 立即同步单条订单到云端
+    bool deleteSingleOrderFromPostgres(const QString &orderNumber); // 立即从云端删除单条订单
     bool loadFromLocalCache();
     bool saveToLocalCache() const;
     bool hasDirtyChanges() const;

@@ -88,12 +88,25 @@ QVariantMap AccountManager::lockUser_api(const QString &username) {
         if (it->getUsername() == username) {
             it->lock();
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE users SET locked = true WHERE username = ?");
-                q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE users SET locked = true WHERE username = ?");
+                    q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端锁定失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步锁定用户:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; result["message"] = "成功锁定"; return result;
         }
@@ -107,12 +120,25 @@ QVariantMap AccountManager::lockAdmin_api(const QString &username) {
         if (it->getUsername() == username) {
             it->lock();
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE admins SET locked = true WHERE username = ?");
-                q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE admins SET locked = true WHERE username = ?");
+                    q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端锁定失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步锁定管理员:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; result["message"] = "成功锁定"; return result;
         }
@@ -126,12 +152,25 @@ QVariantMap AccountManager::unlockUser_api(const QString &username) {
         if (it->getUsername() == username) {
             it->unlock();
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE users SET locked = false WHERE username = ?");
-                q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE users SET locked = false WHERE username = ?");
+                    q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端解锁失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步解锁用户:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; return result;
         }
@@ -145,12 +184,25 @@ QVariantMap AccountManager::unlockAdmin_api(const QString &username) {
         if (it->getUsername() == username) {
             it->unlock();
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE admins SET locked = false WHERE username = ?");
-                q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE admins SET locked = false WHERE username = ?");
+                    q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端解锁失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步解锁管理员:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; return result;
         }
@@ -169,12 +221,25 @@ QVariantMap AccountManager::editUserProfile_api(const QString &username, const Q
             UserProfile userProfile(name, phoneNumber, id);
             it->setProfile(userProfile);
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE users SET full_name = ?, phone = ?, id_card = ? WHERE username = ?");
-                q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id); q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE users SET full_name = ?, phone = ?, id_card = ? WHERE username = ?");
+                    q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id); q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端更新失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步更新用户资料:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; result["message"] = QString("信息修改成功"); return result;
         }
@@ -202,12 +267,25 @@ QVariantMap AccountManager::registerUser_api(QVariantMap info) {
     User user(profile, false, username, password);
     users.push_back(user);
     m_dirty = true;
-    if (railwayPgCanWriteImmediately()) {
+    
+    // 立即同步到云端
+    if (railwayPgIsOpen()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
-        QSqlQuery q(db);
-        q.prepare("INSERT INTO users (username, password, locked, full_name, phone, id_card) VALUES (?,?,?,?,?,?)");
-        q.addBindValue(username); q.addBindValue(password); q.addBindValue(false); q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id);
-        q.exec();
+        if (!db.isOpen()) {
+            railwayPgTryOpenFromEnvironment();
+            db = QSqlDatabase::database("railway", false);
+        }
+        if (db.isOpen()) {
+            QSqlQuery q(db);
+            q.prepare("INSERT INTO users (username, password, locked, full_name, phone, id_card) VALUES (?,?,?,?,?,?)");
+            q.addBindValue(username); q.addBindValue(password); q.addBindValue(false); q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id);
+            if (!q.exec()) {
+                qWarning() << "[账户管理] 云端注册失败:" << q.lastError().text();
+            } else {
+                qDebug() << "[账户管理] ✅ 已同步注册用户:" << username;
+                m_dirty = false;
+            }
+        }
     }
     result["success"] = true; result["message"] = "注册成功！"; return result;
 }
@@ -220,12 +298,25 @@ QVariantMap AccountManager::resetPassword_api(QVariantMap info) {
         if (it->getUsername() == username) {
             it->setPassword(password);
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE users SET password = ? WHERE username = ?");
-                q.addBindValue(password); q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE users SET password = ? WHERE username = ?");
+                    q.addBindValue(password); q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端重置密码失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步重置用户密码:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; result["message"] = "重置成功"; return result;
         }
@@ -234,12 +325,25 @@ QVariantMap AccountManager::resetPassword_api(QVariantMap info) {
         if (it->getUsername() == username) {
             it->setPassword(password);
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE admins SET password = ? WHERE username = ?");
-                q.addBindValue(password); q.addBindValue(username);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE admins SET password = ? WHERE username = ?");
+                    q.addBindValue(password); q.addBindValue(username);
+                    if (!q.exec()) {
+                        qWarning() << "[账户管理] 云端重置密码失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[账户管理] ✅ 已同步重置管理员密码:" << username;
+                        m_dirty = false;
+                    }
+                }
             }
             result["success"] = true; result["message"] = "重置成功"; return result;
         }

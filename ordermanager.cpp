@@ -208,24 +208,58 @@ bool OrderManager::createOrder(Order &order) {
     orders.insert(orders.begin(), order);
     m_dirty = true;
     
-    if (railwayPgCanWriteImmediately()) {
+    // 立即同步到云端
+    if (railwayPgIsOpen()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
-        const int uid = lookupUserId(db, order.getUsername());
-        const int tid = lookupTrainId(db, order.getTrainNumber());
-        const int pid = lookupPassengerId(db, order.getPassenger().getId());
-        const int sid = lookupStationId(db, order.getStartStation().getStationName());
-        const int eid = lookupStationId(db, order.getEndStation().getStationName());
+        if (!db.isOpen()) {
+            railwayPgTryOpenFromEnvironment();
+            db = QSqlDatabase::database("railway", false);
+        }
         
-        if (uid >= 0 && tid >= 0 && pid >= 0 && sid >= 0 && eid >= 0) {
-            Timetable ttCopy = order.getTimetable();
-            const QString snap = RailwayPgCodec::timetableToStopsJson(ttCopy);
-            const QDate td(order.getDate().getYear(), order.getDate().getMonth(), order.getDate().getDay());
-            QSqlQuery qi(db);
-            qi.prepare("INSERT INTO orders (order_number, user_id, train_id, passenger_id, start_station_id, end_station_id, seat_level, carriage_number, seat_row, seat_col, price, travel_date, status, timetable_snapshot) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            qi.addBindValue(order.getOrderNumber()); qi.addBindValue(uid); qi.addBindValue(tid); qi.addBindValue(pid); qi.addBindValue(sid); qi.addBindValue(eid); qi.addBindValue(order.getSeatLevel()); qi.addBindValue(order.getCarriageNumber()); qi.addBindValue(order.getSeatRow()); qi.addBindValue(order.getSeatCol()); qi.addBindValue(order.getPrice()); qi.addBindValue(td); qi.addBindValue(order.getStatus()); qi.addBindValue(snap);
+        if (db.isOpen()) {
+            const int uid = lookupUserId(db, order.getUsername());
+            const int tid = lookupTrainId(db, order.getTrainNumber());
+            const int pid = lookupPassengerId(db, order.getPassenger().getId());
+            const int sid = lookupStationId(db, order.getStartStation().getStationName());
+            const int eid = lookupStationId(db, order.getEndStation().getStationName());
             
-            if (!qi.exec()) {
-                qWarning() << "订单插入数据库失败:" << qi.lastError().text();
+            if (uid >= 0 && tid >= 0 && pid >= 0 && sid >= 0 && eid >= 0) {
+                Timetable ttCopy = order.getTimetable();
+                const QString snap = RailwayPgCodec::timetableToStopsJson(ttCopy);
+                const QDate td(order.getDate().getYear(), order.getDate().getMonth(), order.getDate().getDay());
+                QSqlQuery qi(db);
+                qi.prepare("INSERT INTO orders (order_number, user_id, train_id, passenger_id, start_station_id, end_station_id, seat_level, carriage_number, seat_row, seat_col, price, travel_date, status, timetable_snapshot) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                qi.addBindValue(order.getOrderNumber()); 
+                qi.addBindValue(uid); 
+                qi.addBindValue(tid); 
+                qi.addBindValue(pid); 
+                qi.addBindValue(sid); 
+                qi.addBindValue(eid); 
+                qi.addBindValue(order.getSeatLevel()); 
+                qi.addBindValue(order.getCarriageNumber()); 
+                qi.addBindValue(order.getSeatRow()); 
+                qi.addBindValue(order.getSeatCol()); 
+                qi.addBindValue(order.getPrice()); 
+                qi.addBindValue(td); 
+                qi.addBindValue(order.getStatus()); 
+                qi.addBindValue(snap);
+                
+                if (!qi.exec()) {
+                    qWarning() << "[订单管理] 云端创建失败:" << qi.lastError().text();
+                    // 从本地订单列表中移除失败的订单
+                    for (auto it = orders.begin(); it != orders.end(); ++it) {
+                        if (it->getOrderNumber() == order.getOrderNumber()) {
+                            orders.erase(it);
+                            break;
+                        }
+                    }
+                    return false;
+                } else {
+                    qDebug() << "[订单管理] ✅ 已同步创建订单到云端:" << order.getOrderNumber();
+                    m_dirty = false;
+                }
+            } else {
+                qWarning() << "[订单管理] 订单关联的实体未找到: uid=" << uid << " tid=" << tid << " pid=" << pid << " sid=" << sid << " eid=" << eid;
                 // 从本地订单列表中移除失败的订单
                 for (auto it = orders.begin(); it != orders.end(); ++it) {
                     if (it->getOrderNumber() == order.getOrderNumber()) {
@@ -235,16 +269,6 @@ bool OrderManager::createOrder(Order &order) {
                 }
                 return false;
             }
-        } else {
-            qWarning() << "订单关联的实体未找到: uid=" << uid << " tid=" << tid << " pid=" << pid << " sid=" << sid << " eid=" << eid;
-            // 从本地订单列表中移除失败的订单
-            for (auto it = orders.begin(); it != orders.end(); ++it) {
-                if (it->getOrderNumber() == order.getOrderNumber()) {
-                    orders.erase(it);
-                    break;
-                }
-            }
-            return false;
         }
     }
     return true;
@@ -263,12 +287,27 @@ bool OrderManager::cancelOrder(const QString &orderNumber) {
         if (order.getOrderNumber() == orderNumber) {
             order.setStatus("已取消");
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE orders SET status = '已取消' WHERE order_number = ?");
-                q.addBindValue(orderNumber);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE orders SET status = '已取消' WHERE order_number = ?");
+                    q.addBindValue(orderNumber);
+                    
+                    if (!q.exec()) {
+                        qWarning() << "[订单管理] 云端取消失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[订单管理] ✅ 已同步取消订单到云端:" << orderNumber;
+                        m_dirty = false;
+                    }
+                }
             }
             return true;
         }
@@ -281,12 +320,27 @@ bool OrderManager::rescheduleOrder(const QString &orderNumber) {
         if (order.getOrderNumber() == orderNumber) {
             order.setStatus("已改签");
             m_dirty = true;
-            if (railwayPgCanWriteImmediately()) {
+            
+            // 立即同步到云端
+            if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
-                QSqlQuery q(db);
-                q.prepare("UPDATE orders SET status = '已改签' WHERE order_number = ?");
-                q.addBindValue(orderNumber);
-                q.exec();
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
+                
+                if (db.isOpen()) {
+                    QSqlQuery q(db);
+                    q.prepare("UPDATE orders SET status = '已改签' WHERE order_number = ?");
+                    q.addBindValue(orderNumber);
+                    
+                    if (!q.exec()) {
+                        qWarning() << "[订单管理] 云端改签失败:" << q.lastError().text();
+                    } else {
+                        qDebug() << "[订单管理] ✅ 已同步改签订单到云端:" << orderNumber;
+                        m_dirty = false;
+                    }
+                }
             }
             return true;
         }

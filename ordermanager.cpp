@@ -217,11 +217,25 @@ bool OrderManager::createOrder(Order &order) {
         }
         
         if (db.isOpen()) {
+            qDebug() << "[订单管理] 开始查找外键...";
+            qDebug() << "  用户名:" << order.getUsername();
+            qDebug() << "  车次号:" << order.getTrainNumber();
+            qDebug() << "  乘车人ID:" << order.getPassenger().getId();
+            qDebug() << "  始发站:" << order.getStartStation().getStationName();
+            qDebug() << "  终点站:" << order.getEndStation().getStationName();
+            
             const int uid = lookupUserId(db, order.getUsername());
             const int tid = lookupTrainId(db, order.getTrainNumber());
             const int pid = lookupPassengerId(db, order.getPassenger().getId());
             const int sid = lookupStationId(db, order.getStartStation().getStationName());
             const int eid = lookupStationId(db, order.getEndStation().getStationName());
+            
+            qDebug() << "[订单管理] 查找结果:";
+            qDebug() << "  user_id:" << uid;
+            qDebug() << "  train_id:" << tid;
+            qDebug() << "  passenger_id:" << pid;
+            qDebug() << "  start_station_id:" << sid;
+            qDebug() << "  end_station_id:" << eid;
             
             if (uid >= 0 && tid >= 0 && pid >= 0 && sid >= 0 && eid >= 0) {
                 Timetable ttCopy = order.getTimetable();
@@ -259,7 +273,13 @@ bool OrderManager::createOrder(Order &order) {
                     m_dirty = false;
                 }
             } else {
-                qWarning() << "[订单管理] 订单关联的实体未找到: uid=" << uid << " tid=" << tid << " pid=" << pid << " sid=" << sid << " eid=" << eid;
+                qWarning() << "[订单管理] ❌ 订单关联的实体未找到,无法创建订单!";
+                if (uid < 0) qWarning() << "  - 用户不存在:" << order.getUsername();
+                if (tid < 0) qWarning() << "  - 车次不存在:" << order.getTrainNumber();
+                if (pid < 0) qWarning() << "  - 乘车人不存在,身份证:" << order.getPassenger().getId();
+                if (sid < 0) qWarning() << "  - 始发站不存在:" << order.getStartStation().getStationName();
+                if (eid < 0) qWarning() << "  - 终点站不存在:" << order.getEndStation().getStationName();
+                
                 // 从本地订单列表中移除失败的订单
                 for (auto it = orders.begin(); it != orders.end(); ++it) {
                     if (it->getOrderNumber() == order.getOrderNumber()) {
@@ -354,7 +374,8 @@ bool OrderManager::hasUnusedOrderForPassenger(const QString &username, const QSt
 
 bool OrderManager::hasAnyOrderForPassenger(const QString &username, const QString &passengerId) {
     for (auto order : orders) {
-        if (order.getPassenger().getUsername() == username && order.getPassenger().getId() == passengerId) {
+        if (order.getPassenger().getUsername() == username 
+            && order.getPassenger().getId() == passengerId) {
             return true;
         }
     }
@@ -407,20 +428,60 @@ bool OrderManager::writeToFile(const char filename[]) {
 
 namespace {
 int lookupUserId(QSqlDatabase &db, const QString &username) {
-    QSqlQuery q(db); q.prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1"); q.addBindValue(username);
-    if (!q.exec() || !q.next()) return -1; return q.value(0).toInt();
+    QSqlQuery q(db); 
+    q.prepare("SELECT user_id FROM users WHERE username = ? LIMIT 1"); 
+    q.addBindValue(username);
+    if (!q.exec()) {
+        qWarning() << "[订单管理] 查询用户失败:" << q.lastError().text();
+        return -1;
+    }
+    if (!q.next()) {
+        qWarning() << "[订单管理] 用户不存在于数据库:" << username;
+        return -1;
+    }
+    return q.value(0).toInt();
 }
 int lookupTrainId(QSqlDatabase &db, const QString &trainNumber) {
-    QSqlQuery q(db); q.prepare("SELECT train_id FROM trains WHERE train_number = ? LIMIT 1"); q.addBindValue(trainNumber);
-    if (!q.exec() || !q.next()) return -1; return q.value(0).toInt();
+    QSqlQuery q(db); 
+    q.prepare("SELECT train_id FROM trains WHERE train_number = ? LIMIT 1"); 
+    q.addBindValue(trainNumber);
+    if (!q.exec()) {
+        qWarning() << "[订单管理] 查询车次失败:" << q.lastError().text();
+        return -1;
+    }
+    if (!q.next()) {
+        qWarning() << "[订单管理] 车次不存在于数据库:" << trainNumber;
+        return -1;
+    }
+    return q.value(0).toInt();
 }
 int lookupPassengerId(QSqlDatabase &db, const QString &idNumber) {
-    QSqlQuery q(db); q.prepare("SELECT passenger_id FROM passengers WHERE id_number = ? LIMIT 1"); q.addBindValue(idNumber);
-    if (!q.exec() || !q.next()) return -1; return q.value(0).toInt();
+    QSqlQuery q(db); 
+    q.prepare("SELECT passenger_id FROM passengers WHERE id_number = ? LIMIT 1"); 
+    q.addBindValue(idNumber);
+    if (!q.exec()) {
+        qWarning() << "[订单管理] 查询乘车人失败:" << q.lastError().text();
+        return -1;
+    }
+    if (!q.next()) {
+        qWarning() << "[订单管理] 乘车人不存在于数据库,身份证:" << idNumber;
+        return -1;
+    }
+    return q.value(0).toInt();
 }
 int lookupStationId(QSqlDatabase &db, const QString &stationName) {
-    QSqlQuery q(db); q.prepare("SELECT station_id FROM stations WHERE station_name = ? LIMIT 1"); q.addBindValue(stationName);
-    if (!q.exec() || !q.next()) return -1; return q.value(0).toInt();
+    QSqlQuery q(db); 
+    q.prepare("SELECT station_id FROM stations WHERE station_name = ? LIMIT 1"); 
+    q.addBindValue(stationName);
+    if (!q.exec()) {
+        qWarning() << "[订单管理] 查询站点失败:" << q.lastError().text();
+        return -1;
+    }
+    if (!q.next()) {
+        qWarning() << "[订单管理] 站点不存在于数据库:" << stationName;
+        return -1;
+    }
+    return q.value(0).toInt();
 }
 }
 

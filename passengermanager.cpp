@@ -36,6 +36,11 @@ QVariantMap PassengerManager::deletePassengerByUsernameAndId_api(const QString &
     // 先检查云端是否有"待乘坐"的订单
     if (railwayPgIsOpen()) {
         QSqlDatabase db = QSqlDatabase::database("railway", false);
+        if (!db.isOpen()) {
+            railwayPgTryOpenFromEnvironment();
+            db = QSqlDatabase::database("railway", false);
+        }
+        
         if (db.isOpen()) {
             QSqlQuery checkQuery(db);
             checkQuery.prepare("SELECT COUNT(*) FROM orders o "
@@ -45,58 +50,68 @@ QVariantMap PassengerManager::deletePassengerByUsernameAndId_api(const QString &
             
             if (checkQuery.exec() && checkQuery.next()) {
                 int orderCount = checkQuery.value(0).toInt();
+                qDebug() << "[乘车人] 检查删除条件: 乘车人" << id << "有" << orderCount << "个待乘坐订单";
                 if (orderCount > 0) {
                     result["success"] = false;
                     result["message"] = QString("该乘车人有 %1 个待乘坐的订单,请先取消这些订单后再删除!").arg(orderCount);
                     qWarning() << "[乘车人] ⚠️  删除失败: 乘车人" << id << "有" << orderCount << "个待乘坐订单";
                     return result;
                 }
+            } else {
+                qWarning() << "[乘车人] 查询失败:" << checkQuery.lastError().text();
             }
         }
     }
     
     for (auto it = passengers.begin(); it != passengers.end(); it++) {
         if (it->getUsername() == username && it->getId() == id) {
-            Passenger backup = *it;
-            passengers.erase(it);
-            m_dirty = true;
-            
-            // 先删除历史订单(非"待乘坐"状态)
+            // 先删除云端数据,成功后再删除本地数据
             if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
+                if (!db.isOpen()) {
+                    railwayPgTryOpenFromEnvironment();
+                    db = QSqlDatabase::database("railway", false);
+                }
                 
-                // 删除历史订单
-                QSqlQuery deleteHistoryOrders(db);
-                deleteHistoryOrders.prepare("DELETE FROM orders WHERE passenger_id IN "
-                                           "(SELECT passenger_id FROM passengers WHERE id_number = ?) "
-                                           "AND status != '待乘坐'");
-                deleteHistoryOrders.addBindValue(id);
-                if (deleteHistoryOrders.exec()) {
-                    int deletedCount = deleteHistoryOrders.numRowsAffected();
-                    if (deletedCount > 0) {
-                        qDebug() << "[乘车人] 已删除" << deletedCount << "条历史订单记录";
+                if (db.isOpen()) {
+                    // 删除历史订单(非"待乘坐"状态)
+                    QSqlQuery deleteHistoryOrders(db);
+                    deleteHistoryOrders.prepare("DELETE FROM orders WHERE passenger_id IN "
+                                               "(SELECT passenger_id FROM passengers WHERE id_number = ?) "
+                                               "AND status != '待乘坐'");
+                    deleteHistoryOrders.addBindValue(id);
+                    if (deleteHistoryOrders.exec()) {
+                        int deletedCount = deleteHistoryOrders.numRowsAffected();
+                        if (deletedCount > 0) {
+                            qDebug() << "[乘车人] 已删除" << deletedCount << "条历史订单记录";
+                        }
+                    }
+                    
+                    // 删除乘车人
+                    QSqlQuery q(db);
+                    q.prepare("DELETE FROM passengers WHERE id_number = ?");
+                    q.addBindValue(id);
+                    if (!q.exec()) {
+                        result["success"] = false;
+                        result["message"] = QString("云端删除失败：%1").arg(q.lastError().text());
+                        return result;
+                    } else {
+                        qDebug() << "[乘车人] ✅ 已从云端删除:" << id;
                     }
                 }
-                
-                // 删除乘车人
-                QSqlQuery q(db);
-                q.prepare("DELETE FROM passengers WHERE id_number = ?");
-                q.addBindValue(id);
-                if (!q.exec()) {
-                    passengers.push_back(backup);
-                    result["success"] = false;
-                    result["message"] = QString("云端删除失败：%1").arg(q.lastError().text());
-                    return result;
-                } else {
-                    qDebug() << "[乘车人] ✅ 已从云端删除:" << id;
-                }
             }
+            
+            // 云端删除成功后,删除本地数据
+            passengers.erase(it);
+            m_dirty = false; // 云端已同步,标记为clean
+            
             result["success"] = true; 
             result["message"] = "删除成功！"; 
             return result;
         }
     }
-    result["success"] = false; 
+    result["success"] = false;
+    result["message"] = "乘车人不存在";
     return result;
 }
 

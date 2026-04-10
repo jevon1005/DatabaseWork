@@ -38,6 +38,9 @@ public:
     void loadFromPostgres();
     void loadFromPostgres(QSqlDatabase &db);
     void saveToPostgres();
+    void syncSingleTrainToPostgres(Train &train); // 立即同步单条列车到云端 (改为非const引用)
+    bool deleteSingleTrainFromPostgres(const QString &trainNumber); // 立即从云端删除单条列车
+    void updateTrainNumberInPostgres(const QString &oldTrainNumber, Train &train); // 更新车次号(处理外键约束)
     bool loadFromLocalCache();
     bool saveToLocalCache() const;
     bool hasDirtyChanges() const;

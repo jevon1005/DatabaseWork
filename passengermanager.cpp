@@ -32,14 +32,53 @@ QVariantList PassengerManager::getPassengersByUsername_api(const QString &userna
 
 QVariantMap PassengerManager::deletePassengerByUsernameAndId_api(const QString &username, const QString &id) {
     QVariantMap result;
+    
+    // 先检查云端是否有"待乘坐"的订单
+    if (railwayPgIsOpen()) {
+        QSqlDatabase db = QSqlDatabase::database("railway", false);
+        if (db.isOpen()) {
+            QSqlQuery checkQuery(db);
+            checkQuery.prepare("SELECT COUNT(*) FROM orders o "
+                             "JOIN passengers p ON o.passenger_id = p.passenger_id "
+                             "WHERE p.id_number = ? AND o.status = '待乘坐'");
+            checkQuery.addBindValue(id);
+            
+            if (checkQuery.exec() && checkQuery.next()) {
+                int orderCount = checkQuery.value(0).toInt();
+                if (orderCount > 0) {
+                    result["success"] = false;
+                    result["message"] = QString("该乘车人有 %1 个待乘坐的订单,请先取消这些订单后再删除!").arg(orderCount);
+                    qWarning() << "[乘车人] ⚠️  删除失败: 乘车人" << id << "有" << orderCount << "个待乘坐订单";
+                    return result;
+                }
+            }
+        }
+    }
+    
     for (auto it = passengers.begin(); it != passengers.end(); it++) {
         if (it->getUsername() == username && it->getId() == id) {
             Passenger backup = *it;
             passengers.erase(it);
-            // 实时数据库删除
             m_dirty = true;
+            
+            // 先删除历史订单(非"待乘坐"状态)
             if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
+                
+                // 删除历史订单
+                QSqlQuery deleteHistoryOrders(db);
+                deleteHistoryOrders.prepare("DELETE FROM orders WHERE passenger_id IN "
+                                           "(SELECT passenger_id FROM passengers WHERE id_number = ?) "
+                                           "AND status != '待乘坐'");
+                deleteHistoryOrders.addBindValue(id);
+                if (deleteHistoryOrders.exec()) {
+                    int deletedCount = deleteHistoryOrders.numRowsAffected();
+                    if (deletedCount > 0) {
+                        qDebug() << "[乘车人] 已删除" << deletedCount << "条历史订单记录";
+                    }
+                }
+                
+                // 删除乘车人
                 QSqlQuery q(db);
                 q.prepare("DELETE FROM passengers WHERE id_number = ?");
                 q.addBindValue(id);
@@ -48,33 +87,81 @@ QVariantMap PassengerManager::deletePassengerByUsernameAndId_api(const QString &
                     result["success"] = false;
                     result["message"] = QString("云端删除失败：%1").arg(q.lastError().text());
                     return result;
+                } else {
+                    qDebug() << "[乘车人] ✅ 已从云端删除:" << id;
                 }
             }
-            result["success"] = true; result["message"] = "删除成功！"; return result;
+            result["success"] = true; 
+            result["message"] = "删除成功！"; 
+            return result;
         }
     }
-    result["success"] = false; return result;
+    result["success"] = false; 
+    return result;
 }
 
 QVariantMap PassengerManager::editPassenger_api(const QString &username, const QString &id_old, const QString &name, const QString &phoneNumber, const QString &id_new, const QString &type) {
     QVariantMap result;
     auto findResult = getPassengerByUsernameAndId(username, id_new);
-    if (findResult && id_new != id_old) { result["success"] = false; return result; }
+    if (findResult && id_new != id_old) { 
+        result["success"] = false; 
+        result["message"] = "新证件号已存在";
+        return result; 
+    }
+    
+    // 如果修改证件号,先检查是否有"待乘坐"订单
+    if (id_old != id_new && railwayPgIsOpen()) {
+        QSqlDatabase db = QSqlDatabase::database("railway", false);
+        if (db.isOpen()) {
+            QSqlQuery checkQuery(db);
+            checkQuery.prepare("SELECT COUNT(*) FROM orders o "
+                             "JOIN passengers p ON o.passenger_id = p.passenger_id "
+                             "WHERE p.id_number = ? AND o.status = '待乘坐'");
+            checkQuery.addBindValue(id_old);
+            
+            if (checkQuery.exec() && checkQuery.next()) {
+                int orderCount = checkQuery.value(0).toInt();
+                if (orderCount > 0) {
+                    result["success"] = false;
+                    result["message"] = QString("该乘车人有 %1 个待乘坐的订单,无法修改证件号!").arg(orderCount);
+                    qWarning() << "[乘车人] ⚠️  修改失败: 乘车人" << id_old << "有" << orderCount << "个待乘坐订单";
+                    return result;
+                }
+            }
+        }
+    }
+    
     for (auto it = passengers.begin(); it != passengers.end(); it++) {
         if (it->getUsername() == username && it->getId() == id_old) {
-            it->setName(name); it->setPhoneNumber(phoneNumber); it->setId(id_new); it->setType(type);
+            it->setName(name); 
+            it->setPhoneNumber(phoneNumber); 
+            it->setId(id_new); 
+            it->setType(type);
             m_dirty = true;
+            
             if (railwayPgIsOpen()) {
                 QSqlDatabase db = QSqlDatabase::database("railway", false);
                 QSqlQuery q(db);
                 q.prepare("UPDATE passengers SET name = ?, phone = ?, id_number = ?, passenger_type = ? WHERE id_number = ?");
-                q.addBindValue(name); q.addBindValue(phoneNumber); q.addBindValue(id_new); q.addBindValue(type); q.addBindValue(id_old);
-                q.exec();
+                q.addBindValue(name); 
+                q.addBindValue(phoneNumber); 
+                q.addBindValue(id_new); 
+                q.addBindValue(type); 
+                q.addBindValue(id_old);
+                
+                if (!q.exec()) {
+                    qWarning() << "[乘车人] 云端更新失败:" << q.lastError().text();
+                } else {
+                    qDebug() << "[乘车人] ✅ 已更新乘车人信息:" << id_old << (id_old != id_new ? QString(" -> ") + id_new : "");
+                }
             }
-            result["success"] = true; result["message"] = "修改成功！"; return result;
+            result["success"] = true; 
+            result["message"] = "修改成功！"; 
+            return result;
         }
     }
-    result["success"] = false; return result;
+    result["success"] = false; 
+    return result;
 }
 
 QVariantMap PassengerManager::addPassenger_api(QVariantMap info) {

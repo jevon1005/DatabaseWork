@@ -159,3 +159,4 @@ compile_commands.json
 softwareTest/*
 !softwareTest/*.tex
 !softwareTest/*.pdf
+!softwareTest/项目开发文档/
